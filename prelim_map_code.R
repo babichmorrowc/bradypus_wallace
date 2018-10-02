@@ -4,28 +4,50 @@ library(ggmap)
 library(maps)
 library(mapdata)
 
-#read in processed occurrence files for the three species
+#read in processed occurrence files from Wallace for the three species
 #all have been spatially thinned to 10km
-Bradypus_variegatus_processed_occs <- read_csv("OneDrive - AMNH/Wallace/Bradypus_variegatus_processed_occs.csv")
-Bradypus_tridactylus_processed_occs <- read_csv("OneDrive - AMNH/Wallace/Bradypus_tridactylus_processed_occs.csv")
-Bradypus_torquatus_processed_occs <- read_csv("OneDrive - AMNH/Wallace/Bradypus_torquatus_processed_occs.csv")
+Bradypus_variegatus_processed_occs <- read_csv("~/OneDrive - AMNH/Wallace/Data/Wallace_downloads/Bradypus_variegatus_processed_occs.csv")
+Bradypus_tridactylus_processed_occs <- read_csv("~/OneDrive - AMNH/Wallace/Data/Wallace_downloads/Bradypus_tridactylus_processed_occs.csv")
+Bradypus_torquatus_processed_occs <- read_csv("~/OneDrive - AMNH/Wallace/Data/Wallace_downloads/Bradypus_torquatus_processed_occs.csv")
 
+#read in occurrences compiled from literature for B. variegatus and B. tridactylus
+Bradypus_variegatus_lit_data <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_variegatus_Anderson_Handley_plus_Moraes_Barros_2011.csv",
+col_types = cols(X4 = col_skip(), X5 = col_skip(),
+X6 = col_skip(), X7 = col_skip())) #haven't figured out why I have to do the skipping thing
+
+Bradypus_tridactylus_lit_data <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_tridactylus_Anderson_Handley_Moraes_Barros_2011.csv")
+
+
+#delineating the latitudes and longitudes of interest for south and central america
 southamerica<-map_data("world",xlim = c(-100,-25), ylim = c(-30,25),lforce='e')
 
+#plot that region
 gg1 <- ggplot() + 
-  geom_polygon(data = world, aes(x=long, y = lat, group = group), fill = "grey", color = "darkgrey")
+  geom_polygon(data = southamerica, aes(x=long, y = lat, group = group), fill = "grey", color = "darkgrey")
 gg1
 
-gg2 <- gg1 + coord_fixed(xlim = c(-100,-25), ylim = c(-75,25))
-gg2
-
-gg2 + 
+#add processed occurrence points from Wallace
+gg1 + 
   geom_point(data = Bradypus_variegatus_processed_occs, aes(x = longitude, y = latitude), color = "green",size = .75) +
   geom_point(data = Bradypus_tridactylus_processed_occs, aes(x = longitude, y = latitude), color = "blue",size = .75) +
   geom_point(data = Bradypus_torquatus_processed_occs, aes(x = longitude, y = latitude), color = "red",size = .75)
 
-gg2 + 
+gg1 + 
   geom_point(data = Bradypus_variegatus_processed_occs, aes(x = longitude, y = latitude), pch = 1) +
   geom_point(data = Bradypus_tridactylus_processed_occs, aes(x = longitude, y = latitude), pch = 17) +
   geom_point(data = Bradypus_torquatus_processed_occs, aes(x = longitude, y = latitude), pch = 15)
+
+#add data from literature
+#for variegatus
+gg1 +
+  geom_point(data = Bradypus_variegatus_lit_data, aes(x=longitude, y=latitude))
+#for tridactylus
+gg1 +
+  geom_point(data = Bradypus_tridactylus_lit_data, aes(x = longitude, y = latitude))
+#for both
+gg1 +
+  geom_point(data = Bradypus_variegatus_lit_data, aes(x=longitude, y=latitude), color = "green") +
+  geom_point(data = Bradypus_tridactylus_lit_data, aes(x = longitude, y = latitude), color = "blue")
+
+
 
