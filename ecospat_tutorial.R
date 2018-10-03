@@ -1,4 +1,4 @@
-#Based R tutorial using ecospat package
+#Based on R tutorial using ecospat package
 #https://rsh249.github.io/spatial_bioinformatics/niche_overlap.html
 
 #Load required packages
@@ -70,10 +70,6 @@ pca.env <- dudi.pca(
 ecospat.plot.contrib(contrib=pca.env$co, eigen = pca.env$eig)
 
 
-# Bradypus data -----------------------------------------------------------
 
-variegatus = read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_variegatus_Anderson_Handley_plus_Moraes_Barros_2011.csv",
-                      col_types = cols(X4 = col_skip(), X5 = col_skip(),
-                                       X6 = col_skip(), X7 = col_skip()))
 
 
