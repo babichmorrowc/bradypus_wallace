@@ -50,4 +50,4 @@ gg1 +
   geom_point(data = Bradypus_tridactylus_lit_data, aes(x = longitude, y = latitude), color = "blue")
 
 
-
+duplicated(Bradypus_tridactylus_lit_data)
