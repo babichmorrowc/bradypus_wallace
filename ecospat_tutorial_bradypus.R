@@ -99,10 +99,26 @@ D.overlap <- ecospat.niche.overlap (grid.clim_var, grid.clim_tri, cor=T)$D
 D.overlap
 
 #Niche equivalence test
-eq.test <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
-                                          rep=10, alternative = "greater") ##rep = 1000 recommended for operational runs
-sim.test <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
+
+#alternative = "greater" => testing for niche conservatism
+#alternative = "lower" => testing for niche divergence
+
+eq.test.greater <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
+                                          rep=1000, alternative = "greater") ##rep = 1000 recommended for operational runs
+eq.test.lower <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
+                                                  rep=1000, alternative = "lower") ##rep = 1000 recommended for operational runs
+
+
+sim.test.greater <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
                                           rep=1000, alternative = "greater",
-                                          rand.type=2) 
-ecospat.plot.overlap.test(eq.test, "D", "Equivalency")
-ecospat.plot.overlap.test(sim.test, "D", "Similarity")
+                                          rand.type=2)
+sim.test.lower <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
+                                                  rep=1000, alternative = "lower",
+                                                  rand.type=2) 
+
+
+ecospat.plot.overlap.test(eq.test.greater, "D", "Equivalency")
+ecospat.plot.overlap.test(eq.test.lower, "D", "Equivalency")
+
+ecospat.plot.overlap.test(sim.test.greater, "D", "Similarity")
+ecospat.plot.overlap.test(sim.test.lower, "D", "Similarity")
