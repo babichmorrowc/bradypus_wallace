@@ -35,3 +35,5 @@ tri_raster_crop@extent
 sloth_overlap <- nicheOverlap(var_raster_crop, tri_raster_crop, stat='D', mask=TRUE, checkNegatives=TRUE)
 sloth_overlap
 
+ENMOverlap<-raster.overlap(var_raster_crop,tri_raster_crop)
+
