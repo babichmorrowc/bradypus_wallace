@@ -32,7 +32,7 @@ var_raster_crop@extent
 tri_raster_crop@extent
 
 
-#Calculate Schoener's D
+#Calculate Schoener's D using dismo
 sloth_overlap <- nicheOverlap(var_raster_crop, tri_raster_crop, stat='D', mask=TRUE, checkNegatives=TRUE)
 sloth_overlap
 
@@ -76,7 +76,7 @@ samples <- sites[grep(paste(species, collapse = "|"), sites$species), ] # don't 
 # Tell R where maxent is (the copy that is with dismo).
 maxent.exe <- paste(system.file(package="dismo"),"/java/maxent.jar", sep = "")
 
-# Perform niche equivalency test
+# Perform niche equivalency test using phyloclim
 nicheEquivalency<-niche.equivalency.test(p = samples, env = env, app=maxent.exe, dir = 'NicheEquivalence')
 # Error in file(fname, "r") : cannot open the connection
 # In addition: Warning messages:
@@ -85,8 +85,26 @@ nicheEquivalency<-niche.equivalency.test(p = samples, env = env, app=maxent.exe,
 #                                2: In file(fname, "r") :
 #                                  cannot open file 'NicheEquivalence/out/_proj.asc': No such file or directory
 
+# Perform niche equivalency test using ENMTools
 
+var_enm<-enmtools.species()
+var_enm$species.name <- "variegatus"
+var_enm$presence.points <- variegatus[,2:3]
+var_enm$range <- background.raster.buffer(var_enm$presence.points, 50000, mask = env)
+var_enm$background.points <- background.points.buffer(points = var_enm$presence.points,
+                                                   radius = 20000, n = 1000, mask = env[[1]])
 
+tri_enm<-enmtools.species()
+tri_enm$species.name <- "tridactylus"
+tri_enm$presence.points <- tridactylus[,2:3]
+tri_enm$range <- background.raster.buffer(tri_enm$presence.points, 50000, mask = env)
+tri_enm$background.points <- background.points.buffer(points = tri_enm$presence.points,
+                                                      radius = 20000, n = 1000, mask = env[[1]])
 
+#Run identity test using ENMTools
+id.glm <- identity.test(species.1 = var_enm, species.2 = tri_enm, env = env, type = "glm", nreps = 4)
+id.glm
 
+id.mx <- identity.test(species.1 = var_enm, species.2 = tri_enm, env = env, type = "mx", nreps = 99)
+id.mx
 
