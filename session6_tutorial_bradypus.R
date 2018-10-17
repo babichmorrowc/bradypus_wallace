@@ -31,9 +31,62 @@ tri_raster_crop <- crop(tri_raster, var_raster_crop@extent)
 var_raster_crop@extent
 tri_raster_crop@extent
 
+
 #Calculate Schoener's D
 sloth_overlap <- nicheOverlap(var_raster_crop, tri_raster_crop, stat='D', mask=TRUE, checkNegatives=TRUE)
 sloth_overlap
 
 ENMOverlap<-raster.overlap(var_raster_crop,tri_raster_crop)
+ENMOverlap
+
+
+# Identity Test -----------------------------------------------------------
+
+# Load environmental variables
+#get extent
+ext_sloth_raster = extent(c(var_raster_crop@extent@xmin-5, var_raster_crop@extent@xmax+5, var_raster_crop@extent@ymin-5, var_raster_crop@extent@ymax+5))
+grids = list.files("/Users/hellenfellows/Desktop/bio_2-5m_bil", pattern = "*.bil$")
+sta = stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids))
+env = crop(sta, ext_sloth_raster)
+
+# Load occurrence records for both species
+# These should be csv files of records where columns are: "Species, X, Y".
+#variegatus <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_variegatus_Anderson_Handley_plus_Moraes_Barros_2011.csv",
+#                      col_types = cols(X4 = col_skip(), X5 = col_skip(),
+#                                       X6 = col_skip(), X7 = col_skip()))
+
+#tridactylus <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_tridactylus_Anderson_Handley_Moraes_Barros_2011.csv")
+
+# Change the species columns to just the species' names
+variegatus[1] <- as.factor('variegatus')
+tridactylus[1] <- as.factor('tridactylus')
+# Change column name of first column
+names(variegatus)[1] <- "species"
+names(tridactylus)[1] <- "species"
+
+# row bind them so all occurrences are in 3 rows of Species, X, Y
+sites<-rbind(variegatus, tridactylus)
+View(sites)
+species <- c('variegatus','tridactylus')
+
+# Change the column names of sites
+colnames(sites)<-c("species","longitude","latitude")
+samples <- sites[grep(paste(species, collapse = "|"), sites$species), ] # don't think I need this bit
+
+# Tell R where maxent is (the copy that is with dismo).
+maxent.exe <- paste(system.file(package="dismo"),"/java/maxent.jar", sep = "")
+
+# Perform niche equivalency test
+nicheEquivalency<-niche.equivalency.test(p = samples, env = env, app=maxent.exe, dir = 'NicheEquivalence')
+# Error in file(fname, "r") : cannot open the connection
+# In addition: Warning messages:
+#   1: In niche.equivalency.test(p = samples, env = env, app = maxent.exe,  :
+#                                  2 presence points with missing environmental data removed
+#                                2: In file(fname, "r") :
+#                                  cannot open file 'NicheEquivalence/out/_proj.asc': No such file or directory
+
+
+
+
+
 
