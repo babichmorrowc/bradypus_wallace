@@ -107,4 +107,4 @@ id.glm
 
 id.mx <- identity.test(species.1 = var_enm, species.2 = tri_enm, env = env, type = "mx", nreps = 99)
 id.mx
-
+saveRDS(id.mx, file = "id_test_mx.rds")
