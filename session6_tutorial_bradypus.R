@@ -72,6 +72,7 @@ species <- c('variegatus','tridactylus')
 # Change the column names of sites
 colnames(sites)<-c("species","longitude","latitude")
 samples <- sites[grep(paste(species, collapse = "|"), sites$species), ] # don't think I need this bit
+samples <- as.data.frame(samples)
 
 # Tell R where maxent is (the copy that is with dismo).
 maxent.exe <- paste(system.file(package="dismo"),"/java/maxent.jar", sep = "")
