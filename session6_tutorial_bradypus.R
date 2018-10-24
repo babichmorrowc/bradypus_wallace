@@ -79,12 +79,7 @@ maxent.exe <- paste(system.file(package="dismo"),"/java/maxent.jar", sep = "")
 
 # Perform niche equivalency test using phyloclim
 nicheEquivalency<-niche.equivalency.test(p = samples, env = env, app=maxent.exe, dir = 'NicheEquivalence')
-# Error in file(fname, "r") : cannot open the connection
-# In addition: Warning messages:
-#   1: In niche.equivalency.test(p = samples, env = env, app = maxent.exe,  :
-#                                  2 presence points with missing environmental data removed
-#                                2: In file(fname, "r") :
-#                                  cannot open file 'NicheEquivalence/out/_proj.asc': No such file or directory
+plot(nicheEquivalency)
 
 # Perform niche equivalency test using ENMTools
 
@@ -109,3 +104,14 @@ id.glm
 id.mx <- identity.test(species.1 = var_enm, species.2 = tri_enm, env = env, type = "mx", nreps = 99)
 id.mx
 saveRDS(id.mx, file = "id_test_mx.rds")
+
+
+# Similarity Test ---------------------------------------------------
+
+#Perform niche similarity test using phyloclim
+bg.test <- bg.similarity.test(p = samples, env = env, app = maxent.exe, dir = 'background')
+plot(bg.test)
+
+#Perform niche similarity test using ENMTools
+bg.mx.asym <- background.test(species.1 = var_enm, species.2 = tri_enm, env = env, type = "mx", test.type = "asymmetric" )
+
