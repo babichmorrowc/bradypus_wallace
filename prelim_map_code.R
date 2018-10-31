@@ -11,12 +11,9 @@ Bradypus_tridactylus_processed_occs <- read_csv("~/OneDrive - AMNH/Wallace/Data/
 Bradypus_torquatus_processed_occs <- read_csv("~/OneDrive - AMNH/Wallace/Data/Wallace_downloads/Bradypus_torquatus_processed_occs.csv")
 
 #read in occurrences compiled from literature for B. variegatus and B. tridactylus
-Bradypus_variegatus_lit_data <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_variegatus_Anderson_Handley_plus_Moraes_Barros_2011.csv",
-col_types = cols(X4 = col_skip(), X5 = col_skip(),
-X6 = col_skip(), X7 = col_skip())) #haven't figured out why I have to do the skipping thing
-
-Bradypus_tridactylus_lit_data <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_tridactylus_Anderson_Handley_Moraes_Barros_2011.csv")
-
+Bradypus_variegatus_litdata <- read_delim("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_variegatus_litdata.csv", 
+                                          +     "\t", escape_double = FALSE, trim_ws = TRUE)
+Bradypus_tridactylus_litdata <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_tridactylus_litdata.csv")
 
 #delineating the latitudes and longitudes of interest for south and central america
 southamerica<-map_data("world",xlim = c(-100,-25), ylim = c(-30,25),lforce='e')
@@ -40,14 +37,14 @@ gg1 +
 #add data from literature
 #for variegatus
 gg1 +
-  geom_point(data = Bradypus_variegatus_lit_data, aes(x=longitude, y=latitude))
+  geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude))
 #for tridactylus
 gg1 +
-  geom_point(data = Bradypus_tridactylus_lit_data, aes(x = longitude, y = latitude))
+  geom_point(data = Bradypus_tridactylus_litdata, aes(x = longitude, y = latitude))
 #for both
 gg1 +
-  geom_point(data = Bradypus_variegatus_lit_data, aes(x=longitude, y=latitude), color = "green") +
-  geom_point(data = Bradypus_tridactylus_lit_data, aes(x = longitude, y = latitude), color = "blue")
+  geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude), color = "green") +
+  geom_point(data = Bradypus_tridactylus_litdata, aes(x = longitude, y = latitude), color = "blue")
 
 
 duplicated(Bradypus_tridactylus_lit_data)

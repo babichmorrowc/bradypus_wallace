@@ -108,11 +108,13 @@ eq.test.greater <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
 eq.test.lower <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
                                                   rep=1000, alternative = "lower") ##rep = 1000 recommended for operational runs
 
+#Niche similarity test
 
-sim.test.greater <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
+#compares empirical overlap to overlap between variegatus and random niches in range of tridactylus
+sim.test.greater1 <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
                                           rep=1000, alternative = "greater",
                                           rand.type=2)
-sim.test.lower <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
+sim.test.lower1 <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
                                                   rep=1000, alternative = "lower",
                                                   rand.type=2) 
 
@@ -120,5 +122,18 @@ sim.test.lower <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
 ecospat.plot.overlap.test(eq.test.greater, "D", "Equivalency")
 ecospat.plot.overlap.test(eq.test.lower, "D", "Equivalency")
 
-ecospat.plot.overlap.test(sim.test.greater, "D", "Similarity")
-ecospat.plot.overlap.test(sim.test.lower, "D", "Similarity")
+ecospat.plot.overlap.test(sim.test.greater1, "D", "Similarity")
+ecospat.plot.overlap.test(sim.test.lower1, "D", "Similarity")
+
+#compares empirical overlap to overlap between tridactylus and random niches in range of variegatus
+sim.test.greater2 <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_var,
+                                                  rep=1000, alternative = "greater",
+                                                  rand.type=2)
+sim.test.lower2 <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_var,
+                                                rep=1000, alternative = "lower",
+                                                rand.type=2) 
+
+
+ecospat.plot.overlap.test(sim.test.greater2, "D", "Similarity")
+ecospat.plot.overlap.test(sim.test.lower2, "D", "Similarity")
+
