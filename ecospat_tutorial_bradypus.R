@@ -12,11 +12,8 @@ library(ENMTools)
 # Bradypus data -----------------------------------------------------------
 
 #import data from csvs (cleaned version from literature)
-variegatus = read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_variegatus_Anderson_Handley_plus_Moraes_Barros_2011.csv",
-                      col_types = cols(X4 = col_skip(), X5 = col_skip(),
-                                       X6 = col_skip(), X7 = col_skip()))
-
-tridactylus <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_tridactylus_Anderson_Handley_Moraes_Barros_2011.csv")
+variegatus <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_variegatus_litdata.csv")
+tridactylus <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_tridactylus_litdata.csv")
 
 #get extent
 combine.lat = c(variegatus$latitude, tridactylus$latitude)
@@ -103,8 +100,8 @@ D.overlap
 #alternative = "greater" => testing for niche conservatism
 #alternative = "lower" => testing for niche divergence
 
-eq.test.greater <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
-                                          rep=1000, alternative = "greater") ##rep = 1000 recommended for operational runs
+#eq.test.greater <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
+#                                          rep=1000, alternative = "greater") ##rep = 1000 recommended for operational runs
 eq.test.lower <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
                                                   rep=1000, alternative = "lower") ##rep = 1000 recommended for operational runs
 
@@ -114,9 +111,9 @@ eq.test.lower <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
 sim.test.greater1 <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
                                           rep=1000, alternative = "greater",
                                           rand.type=2)
-sim.test.lower1 <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
-                                                  rep=1000, alternative = "lower",
-                                                  rand.type=2) 
+#sim.test.lower1 <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
+#                                                  rep=1000, alternative = "lower",
+#                                                  rand.type=2) 
 
 
 ecospat.plot.overlap.test(eq.test.greater, "D", "Equivalency")
@@ -129,9 +126,9 @@ ecospat.plot.overlap.test(sim.test.lower1, "D", "Similarity")
 sim.test.greater2 <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_var,
                                                   rep=1000, alternative = "greater",
                                                   rand.type=2)
-sim.test.lower2 <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_var,
-                                                rep=1000, alternative = "lower",
-                                                rand.type=2) 
+#sim.test.lower2 <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_var,
+#                                                rep=1000, alternative = "lower",
+#                                                rand.type=2) 
 
 
 ecospat.plot.overlap.test(sim.test.greater2, "D", "Similarity")

@@ -18,10 +18,10 @@ library(ENMTools)
 
 #Load rasters
 
-var_raster <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/variegatus_layer.asc.txt")
+var_raster <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/variegatus2_layer.asc.txt")
 plot(var_raster)
 
-tri_raster <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/tridactylus_layer.asc.txt")
+tri_raster <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/tridactylus2_layer.asc.txt")
 plot(tri_raster)
 
 #crop rasters to get same extent
@@ -31,6 +31,8 @@ tri_raster_crop <- crop(tri_raster, var_raster_crop@extent)
 var_raster_crop@extent
 tri_raster_crop@extent
 
+plot(var_raster_crop)
+plot(tri_raster_crop)
 
 #Calculate Schoener's D using dismo
 sloth_overlap <- nicheOverlap(var_raster_crop, tri_raster_crop, stat='D', mask=TRUE, checkNegatives=TRUE)
@@ -51,11 +53,8 @@ env = crop(sta, ext_sloth_raster)
 
 # Load occurrence records for both species
 # These should be csv files of records where columns are: "Species, X, Y".
-#variegatus <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_variegatus_Anderson_Handley_plus_Moraes_Barros_2011.csv",
-#                      col_types = cols(X4 = col_skip(), X5 = col_skip(),
-#                                       X6 = col_skip(), X7 = col_skip()))
-
-#tridactylus <- read_csv("~/OneDrive - AMNH/Wallace/Data/Bradypus_tridactylus_Anderson_Handley_Moraes_Barros_2011.csv")
+variegatus <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_variegatus_litdata.csv")
+tridactylus <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_tridactylus_litdata.csv")
 
 # Change the species columns to just the species' names
 variegatus[1] <- as.factor('variegatus')
@@ -65,7 +64,7 @@ names(variegatus)[1] <- "species"
 names(tridactylus)[1] <- "species"
 
 # row bind them so all occurrences are in 3 rows of Species, X, Y
-sites<-rbind(variegatus, tridactylus)
+sites<-rbind(variegatus[,1:3], tridactylus[,1:3])
 View(sites)
 species <- c('variegatus','tridactylus')
 
