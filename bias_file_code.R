@@ -3,8 +3,10 @@ library(spocc)
 library(plyr)
 library(viridis)
 library(ggmap)
+library(MASS)
 
-api_key = "AIzaSyBK7lLbqoqnYFdzf-idYYposb-1gwyRAlQ"
+#provide API key
+#api_key = 
 register_google(key = api_key)
 
 
@@ -65,6 +67,8 @@ ggmap(var_bbox_map) +
 
 # Create a two column dataframe of the non-NA occurrence points
 bg_coords <- bg_locations[c('longitude', 'latitude')]
+#Create SpatialPoints object of occurrence points
+bg_spatialpoints <- SpatialPoints(bg_coords[c("longitude", "latitude")])
 
 #We need the occurrence raster to have the same resolution as our climate data
 #First import climate data
@@ -74,9 +78,34 @@ brick <- brick(sta)
 plot(sta[[1]], col = viridis(99))
 points(bg_coords, col = "red", pch = 0.5)
 
+#get extent
+combine.lat <- c(variegatus$latitude, tridactylus$latitude)
+combine.lon <- c(variegatus$longitude, tridactylus$longitude)
+ext_sloths <- extent(c(min(combine.lon)-5, max(combine.lon)+5, min(combine.lat)-5, max(combine.lat)+5))
+Env_sloths = crop(sta, ext_sloths)
+plot(Env_sloths[[1]], col = viridis(99))
+brick_sloths <- brick(Env_sloths)
+
 #Make occurrence raster for background points
 bg_raster <- rasterize(bg_coords, brick, field = 1)
+bg_raster <- rasterize(bg_spatialpoints, brick, field = 1)
 #bg_raster <- rasterize(bg_coords, Env_sloths, field = 1)
 length(na.omit(bg_raster@data@values))
 plot(bg_raster, col = "black")
 
+#occurrence raster cropped to sloth extent
+bg_raster_crop <- rasterize(bg_coords, brick_sloths, field = 1)
+length(na.omit(bg_raster_crop@data@values))
+plot(bg_raster_crop, col = "black")
+
+#Making KDE
+bg_presence <- which(values(bg_raster_crop) == 1)
+bg_presence_locs <- coordinates(bg_raster_crop)[bg_presence,]
+dens <- kde2d(bg_presence_locs[,1], bg_presence_locs[,2], n = c(nrow(bg_raster_crop), ncol(bg_raster_crop)))
+dens_ras <- raster(dens)
+plot(dens_ras)
+
+#Save bias layer
+writeRaster(dens_ras, "sloth_bias_file.tif")
+
+#Now need to run MaxEnt
