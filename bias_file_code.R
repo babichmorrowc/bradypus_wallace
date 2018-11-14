@@ -4,6 +4,7 @@ library(plyr)
 library(viridis)
 library(ggmap)
 library(MASS)
+library(ENMeval)
 
 #provide API key
 #api_key = 
@@ -103,9 +104,40 @@ bg_presence <- which(values(bg_raster_crop) == 1)
 bg_presence_locs <- coordinates(bg_raster_crop)[bg_presence,]
 dens <- kde2d(bg_presence_locs[,1], bg_presence_locs[,2], n = c(nrow(bg_raster_crop), ncol(bg_raster_crop)))
 dens_ras <- raster(dens)
+#resample to make dens_ras the same resolutoin of brick_sloths
+dens_ras <- resample(dens_ras, brick_sloths, method = "bilinear")
 plot(dens_ras)
 
 #Save bias layer
 writeRaster(dens_ras, "sloth_bias_file.tif")
 
 #Now need to run MaxEnt
+#For variegatus:
+mod_variegatus <- maxent(
+  x=brick_sloths, # bio stack
+  p=variegatus[2,3], # locality csv
+  a= NULL, # background coords
+  #path= "C:/Users/pgalante/Documents/Projects/Madagascar/endemism_diversity/tests", # path to save to
+  args=c(
+    'betamultiplier=3',
+    'linear=true',
+    'quadratic=true',
+    'product=false',
+    'threshold=false',
+    'hinge=true',
+    'responsecurves=true',
+    'jackknife=true',
+    'askoverwrite=false',
+    'biasfile=dens_ras'
+  )
+)
+
+
+
+
+#Code from Wallace Rmd:
+# define the vector of regularization multipliers to test
+rms <- seq(1, 5, 1)
+# iterate model building over all chosen parameter settings
+e <- ENMeval::ENMevaluate(occs.xy, envsBgMsk, bg.coords = bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                          method = 'user', occs.grp, bg.grp, clamp = TRUE, algorithm = "maxnet")
