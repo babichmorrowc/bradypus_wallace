@@ -77,7 +77,7 @@ occs.grp <- group.data[[1]]
 bg.grp <- group.data[[2]]
 
 
-# Build and evaluate niche model ------------------------------------------
+# Bias file ------------------------------------------
 
 # load in bias file
 bias <- raster("sloth_bias_file.tif")
@@ -86,9 +86,14 @@ bias <- raster("sloth_bias_file.tif")
 ext_occs <- extent(c(min(occs$longitude)-5, max(occs$longitude)+5, min(occs$latitude)-5, max(occs$latitude)+5))
 env_occs = crop(envs, ext_sloths)
 #crop bias file to extent of sloth data
-bias <- raster::crop(bias, Env_sloths)
+bias <- raster::mask(bias, env_occs[[1]])
 
 bg.xy <- randomPoints(bias, 10000, prob=TRUE)
 plot(bias)
 points(bg.xy, pch = 20, cex = 0.25)
+
+
+# Build and evaluate niche model ------------------------------------------
+
+
 
