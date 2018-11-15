@@ -110,34 +110,3 @@ plot(dens_ras)
 
 #Save bias layer
 writeRaster(dens_ras, "sloth_bias_file.tif")
-
-#Now need to run MaxEnt
-#For variegatus:
-mod_variegatus <- maxent(
-  x=brick_sloths, # bio stack
-  p=variegatus[2,3], # locality csv
-  a= NULL, # background coords
-  #path= "C:/Users/pgalante/Documents/Projects/Madagascar/endemism_diversity/tests", # path to save to
-  args=c(
-    'betamultiplier=3',
-    'linear=true',
-    'quadratic=true',
-    'product=false',
-    'threshold=false',
-    'hinge=true',
-    'responsecurves=true',
-    'jackknife=true',
-    'askoverwrite=false',
-    'biasfile=dens_ras'
-  )
-)
-
-
-
-
-#Code from Wallace Rmd:
-# define the vector of regularization multipliers to test
-rms <- seq(1, 5, 1)
-# iterate model building over all chosen parameter settings
-e <- ENMeval::ENMevaluate(occs.xy, envsBgMsk, bg.coords = bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
-                          method = 'user', occs.grp, bg.grp, clamp = TRUE, algorithm = "maxnet")
