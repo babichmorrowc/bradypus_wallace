@@ -9,10 +9,11 @@ library(dplyr)
 
 # Import occurrence data --------------------------------------------------
 
-# Variegatus data
+# Literature data
 d.occs <- '/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Occurrence_Data/'
 # create path to user occurrences csv file
-userOccs.path <- file.path(d.occs, "Bradypus_variegatus_litdata.csv")
+#userOccs.path <- file.path(d.occs, "Bradypus_variegatus_litdata.csv")
+userOccs.path <- file.path(d.occs, "Bradypus_tridactylus_litdata.csv")
 # read in csv
 userOccs.csv <- read.csv(userOccs.path, header = TRUE)
 # remove rows with duplicate coordinates
@@ -39,8 +40,8 @@ occs <- occs[as.numeric(rownames(maxThin)),]
 
 # Obtain environmental data -----------------------------------------------
 
-grids <- list.files("/Users/hellenfellows/Desktop/bio_2-5m_bil", pattern = "*.bil$")
-envs <- stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids))
+#grids <- list.files("/Users/hellenfellows/Desktop/bio_2-5m_bil", pattern = "*.bil$")
+#envs <- stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids))
 
 # extract environmental values at occ grid cells
 locs.vals <- raster::extract(envs[[1]], occs[, c('longitude', 'latitude')])
@@ -65,6 +66,21 @@ sp::coordinates(occs.xy) <- ~ longitude + latitude
 # # convert matrix output to data frame
 # bg.xy <- as.data.frame(bg.xy) 
 
+# Bias file ------------------------------------------
+
+# load in bias file
+bias <- raster("sloth_bias_file.tif")
+# mask bias file
+#get extent of occurrence data
+ext_occs <- extent(c(min(occs$longitude)-5, max(occs$longitude)+5, min(occs$latitude)-5, max(occs$latitude)+5))
+#should it be ext_occs or ext_sloths??
+env_occs = crop(envs, ext_occs)
+#crop bias file to extent of sloth data
+bias <- raster::mask(bias, env_occs[[1]])
+
+bg.xy <- randomPoints(bias, 10000, prob=TRUE)
+plot(bias)
+points(bg.xy, pch = 20, cex = 0.25)
 
 # Partition occurrence data -----------------------------------------------
 
@@ -77,23 +93,29 @@ occs.grp <- group.data[[1]]
 bg.grp <- group.data[[2]]
 
 
-# Bias file ------------------------------------------
-
-# load in bias file
-bias <- raster("sloth_bias_file.tif")
-# mask bias file
-#get extent of occurrence data
-ext_occs <- extent(c(min(occs$longitude)-5, max(occs$longitude)+5, min(occs$latitude)-5, max(occs$latitude)+5))
-env_occs = crop(envs, ext_sloths)
-#crop bias file to extent of sloth data
-bias <- raster::mask(bias, env_occs[[1]])
-
-bg.xy <- randomPoints(bias, 10000, prob=TRUE)
-plot(bias)
-points(bg.xy, pch = 20, cex = 0.25)
-
-
 # Build and evaluate niche model ------------------------------------------
 
+# define the vector of regularization multipliers to test
+rms <- seq(1, 5, 1)
 
+# iterate model building over all chosen parameter settings
+e <- ENMeval::ENMevaluate(occs.xy, env_occs, bg.coords = bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                          method = 'user', occs.grp, bg.grp, clamp = TRUE, algorithm = "maxnet")
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+evalTbl <- e@results
+evalMods <- e@models
+names(evalMods) <- e@results$settings
+evalPreds <- e@predictions
 
+# Select your model from the models list
+mod <- evalMods[["H_4"]]
+
+# generate cloglog prediction
+pred <- ENMeval::maxnet.predictRaster(mod, env_occs, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(pred)
+points(occs[2,3])
+
+#save cloglog prediction
+#writeRaster(pred, "variegatus_H5_cloglog.tif")
+writeRaster(pred, "tridactylus_")
