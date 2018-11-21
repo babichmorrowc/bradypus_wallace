@@ -59,7 +59,7 @@ envs <- stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids))
 combine.lat <- c(var_occs$latitude, tri_occs$latitude)
 combine.lon <- c(var_occs$longitude, tri_occs$longitude)
 ext_sloths <- extent(c(min(combine.lon)-5, max(combine.lon)+5, min(combine.lat)-5, max(combine.lat)+5))
-Env_sloths = crop(envs, ext_sloths)
+Env_sloths <- crop(envs, ext_sloths)
 
 # extract environmental values at occ grid cells
 var_locs.vals <- raster::extract(envs[[1]], var_occs[, c('longitude', 'latitude')])
@@ -108,17 +108,25 @@ buffer_tri_bg.xy <- as.data.frame(buffer_tri_bg.xy)
 # load in bias file
 bias <- raster("sloth_bias_file.tif")
 
-bias_var_bg.xy <- randomPoints(bias, 10000, prob=TRUE)
+bias_bg.xy <- randomPoints(bias, 10000, prob=TRUE)
 plot(bias)
-points(bias_var_bg.xy, pch = 20, cex = 0.25)
+points(bias_bg.xy, pch = 20, cex = 0.25)
 
 # Partition occurrence data -----------------------------------------------
 
 #Partition using block method
+var_group_data <- ENMeval::get.block(occ=var_occs.xy, bg.coords=bias_bg.xy)
+tri_group_data <- ENMeval::get.block(occ=tri_occs.xy, bg.coords=bias_bg.xy)
+
 thinned_var_group.data <- ENMeval::get.block(occ=thinned_var_occs.xy, bg.coords=buffer_var_bg.xy)
 thinned_tri_group.data <- ENMeval::get.block(occ=thinned_tri_occs.xy, bg.coords=buffer_tri_bg.xy)
 
 # pull out the occurrence and background partition group numbers from the list
+var_occs.grp <- var_group_data[[1]]
+var_bg.grp <- var_group_data[[2]]
+tri_occs.grp <- tri_group_data[[1]]
+tri_bg.grp <- tri_group_data[[2]]
+
 thinned_var_occs.grp <- thinned_var_group.data[[1]]
 thinned_var_bg.grp <- thinned_var_group.data[[2]]
 thinned_tri_occs.grp <- thinned_tri_group.data[[1]]
@@ -153,6 +161,9 @@ thinned_var_proj <- ENMeval::maxnet.predictRaster(thinned_var_mod, Env_sloths, t
 #plot the model prediction
 plot(thinned_var_proj)
 
+#save cloglog prediction
+writeRaster(thinned_var_proj, "thinned_variegatus_L_3_cloglog.tif")
+
 # iterate model building over all chosen parameter settings
 thinned_tri_e <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk, bg.coords = buffer_tri_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
                                       method = 'user', thinned_tri_occs.grp, thinned_tri_bg.grp, clamp = TRUE, algorithm = "maxnet")
@@ -178,4 +189,50 @@ thinned_tri_proj <- ENMeval::maxnet.predictRaster(thinned_tri_mod, Env_sloths, t
 plot(thinned_tri_proj)
 
 #save cloglog prediction
-writeRaster(thinned_var_proj, "thinned_variegatus_L_3_cloglog.tif")
+writeRaster(thinned_tri_proj, "thinned_variegatus_LQ_3_cloglog.tif")
+
+
+# iterate model building over all chosen parameter settings
+bias_var_e <- ENMeval::ENMevaluate(var_occs.xy, Env_sloths, bg.coords = bias_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                                   method = 'user', var_occs.grp, var_bg.grp, clamp = TRUE, algorithm = "maxent.jar")
+# some kind of error in ENMeval / maxnet has occurred here when I set algorithm = "maxnet"
+# switched algorithm to "maxent.jar" to see if things go better for me
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+bias_var_evalTbl <- bias_var_e@results
+bias_var_evalTbl <- bias_var_evalTbl[with(bias_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
+write_csv(bias_var_evalTbl, "./maxentoutputs/bias_var_evalTbl.csv")
+#evaluation table for variegatus with spatial thinning and bias file:
+bias_var_evalMods <- bias_var_e@models
+names(bias_var_evalMods) <- bias_var_e@results$settings
+bias_var_evalPreds <- bias_var_e@predictions
+# Select your model from the models list
+bias_var_mod <- bias_var_evalMods[["LQH_2"]]
+# generate cloglog prediction
+bias_var_pred <- ENMeval::maxnet.predictRaster(bias_var_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(bias_var_pred)
+
+#save cloglog prediction
+writeRaster(bias_var_pred, "bias_variegatus_LQH_2_cloglog.tif")
+
+
+# iterate model building over all chosen parameter settings
+bias_tri_e <- ENMeval::ENMevaluate(tri_occs.xy, Env_sloths, bg.coords = bias_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                                   method = 'user', tri_occs.grp, tri_bg.grp, clamp = TRUE, algorithm = "maxnet")
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+bias_tri_evalTbl <- bias_tri_e@results
+bias_tri_evalTbl <- bias_tri_evalTbl[with(bias_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
+write_csv(bias_tri_evalTbl, "./maxentoutputs/bias_tri_evalTbl.csv")
+#evalutation table for triiegatus with spatial thinning and bias file:
+bias_tri_evalMods <- bias_tri_e@models
+names(bias_tri_evalMods) <- bias_tri_e@results$settings
+bias_tri_evalPreds <- bias_tri_e@predictions
+# Select your model from the models list
+bias_tri_mod <- bias_tri_evalMods[["L_4"]]
+# generate cloglog prediction
+bias_tri_pred <- ENMeval::maxnet.predictRaster(bias_tri_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(bias_tri_pred)
+
+#save cloglog prediction
+writeRaster(bias_tri_pred, "bias_tridactylus_L_4_cloglog.tif")
