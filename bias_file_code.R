@@ -12,6 +12,9 @@ library(rgbif)
 register_google(key = api_key)
 
 
+# Creating the bias layer -------------------------------------------------
+
+
 #import csv of species list for bias file
 #includes primates, sloths, margay, olingos, mountain coatis, coatis, and kinkajous
 sp_list <- taxonomy <- read.csv("~/OneDrive - AMNH/Wallace/BiasFile/redlist_species_data_1c60e640-3b63-4897-a3c3-ae6a0c44df70/taxonomy.csv")
@@ -117,7 +120,8 @@ writeRaster(bias, "sloth_bias_file.tif", overwrite = TRUE)
 
 ########################################################################################################
 
-#"interrogating" the bias layer
+# Interrogating the bias layer --------------------------------------------
+
 
 #Use rgbif::occ_data() to get the locality information with data source
 rgbif_occ_1 <- occ_data(scientificName = sp_vec[1], limit = 1500)
@@ -181,6 +185,10 @@ ggmap(var_bbox_map) +
   geom_point(data = rgbif_nodups_data, aes(x = decimalLongitude, y = decimalLatitude), color = "black") +
   geom_point(data = rgbif_nodups_data[rgbif_nodups_data$datasetName == "iNaturalist research-grade observations",], aes(x = decimalLongitude, y = decimalLatitude), color = "red", alpha = 0.25)
 
+
+# Remove iNaturalist data -------------------------------------------------
+
+
 #remove iNaturalist observations
 rgbif_noiNat <- rgbif_nodups_data[which(rgbif_nodups_data$datasetName != "iNaturalist research-grade observations"),]
 ggmap(var_bbox_map) +
@@ -215,3 +223,6 @@ plot(noiNat_dens_ras)
 noiNat_bias <- raster::mask(noiNat_dens_ras, Env_sloths[[1]])
 plot(noiNat_bias)
 points(noiNat_coords)
+
+#Save bias layer
+writeRaster(noiNat_bias, "noiNat_bias_file.tif", overwrite = TRUE)
