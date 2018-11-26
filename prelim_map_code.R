@@ -21,7 +21,7 @@ southamerica<-map_data("world",xlim = c(-100,-25), ylim = c(-30,25),lforce='e')
 
 #plot that region
 gg1 <- ggplot() + 
-  geom_polygon(data = southamerica, aes(x=long, y = lat, group = group), fill = "grey", color = "darkgrey")
+  geom_polygon(data = southamerica, aes(x=long, y = lat, group = group), fill = "gray88", color = "darkgrey")
 gg1
 
 #add data from literature
@@ -33,8 +33,36 @@ gg1 +
   geom_point(data = Bradypus_tridactylus_litdata, aes(x = longitude, y = latitude))
 #for both
 gg1 +
-  geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude), color = "green") +
-  geom_point(data = Bradypus_tridactylus_litdata, aes(x = longitude, y = latitude), color = "blue")
+  geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude), color = "darkgoldenrod2") +
+  geom_point(data = Bradypus_tridactylus_litdata, aes(x = longitude, y = latitude), color = "purple1") +
+  theme_classic()
+
+gg1 +
+  geom_point(data = thinned_var_occs, aes(x = longitude, y = latitude), color = "darkgoldenrod2") +
+  geom_point(data = discard_var_occs, aes(x=longitude, y=latitude), color = "red", alpha = 0.5) +
+  theme_classic()
+
+gg1 +
+  geom_point(data = thinned_tri_occs, aes(x = longitude, y = latitude), color = "purple1") +
+  geom_point(data = discard_tri_occs, aes(x=longitude, y=latitude), color = "red", alpha = 0.5) +
+  theme_classic()
+
+gg1 +
+  geom_polygon(data = var_bgExt, aes(x = long, y = lat, group = group), fill = "darkgoldenrod2", alpha = 0.5) +
+  geom_point(data = buffer_var_bg.xy, aes(x = x, y = y), color = "darkgoldenrod2", pch = 0.05) +
+  geom_polygon(data = tri_bgExt, aes(x = long, y = lat, group = group), fill = "purple1", alpha = 0.5) +
+  theme_classic()
+
+gg1 +
+  geom_point(data = cbind(thinned_var_occs, thinned_var_occs.grp), aes(x = longitude, y = latitude, color = as.factor(thinned_var_occs.grp))) +
+  theme_classic() +
+  theme(legend.position = "none")
+
+gg1 +
+  geom_point(data = cbind(thinned_tri_occs, thinned_tri_occs.grp), aes(x = longitude, y = latitude, color = as.factor(thinned_tri_occs.grp))) +
+  theme_classic() +
+  theme(legend.position = "none")
+
 
 #variegatus data by source
 gg1 +
