@@ -149,7 +149,7 @@ thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk, bg.coo
 thinned_var_evalTbl <- thinned_var_e@results
 thinned_var_evalTbl <- thinned_var_evalTbl[with(thinned_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 write_csv(thinned_var_evalTbl, "./maxentoutputs/thinned_var_evalTbl.csv")
-#evalutation table for variegatus with spatial thinning and bias file:
+#evaluation table for variegatus with spatial thinning and bias file:
 thinned_var_evalMods <- thinned_var_e@models
 names(thinned_var_evalMods) <- thinned_var_e@results$settings
 thinned_var_evalPreds <- thinned_var_e@predictions
@@ -176,7 +176,7 @@ thinned_tri_evalTbl <- thinned_tri_e@results
 thinned_tri_evalTbl <- thinned_tri_evalTbl[thinned_tri_evalTbl[,16] > 0,]
 thinned_tri_evalTbl <- thinned_tri_evalTbl[with(thinned_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 write_csv(thinned_tri_evalTbl, "./maxentoutputs/thinned_tri_evalTbl.csv")
-#evalutation table for triiegatus with spatial thinning and bias file:
+#evaluation table for triiegatus with spatial thinning and bias file:
 thinned_tri_evalMods <- thinned_tri_e@models
 names(thinned_tri_evalMods) <- thinned_tri_e@results$settings
 thinned_tri_evalPreds <- thinned_tri_e@predictions
@@ -230,7 +230,7 @@ bias_tri_e <- ENMeval::ENMevaluate(tri_occs.xy, Env_sloths, bg.coords = bias_bg.
 bias_tri_evalTbl <- bias_tri_e@results
 bias_tri_evalTbl <- bias_tri_evalTbl[with(bias_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 write_csv(bias_tri_evalTbl, "./maxentoutputs/bias_tri_evalTbl.csv")
-#evalutation table for triiegatus with spatial thinning and bias file:
+#evaluation table for triiegatus with spatial thinning and bias file:
 bias_tri_evalMods <- bias_tri_e@models
 names(bias_tri_evalMods) <- bias_tri_e@results$settings
 bias_tri_evalPreds <- bias_tri_e@predictions
@@ -255,7 +255,7 @@ bias_thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, Env_sloths, bg.c
 bias_thinned_var_evalTbl <- bias_thinned_var_e@results
 bias_thinned_var_evalTbl <- bias_thinned_var_evalTbl[with(bias_thinned_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 write_csv(bias_thinned_var_evalTbl, "./maxentoutputs/bias_thinned_var_evalTbl.csv")
-#evalutation table for variegatus with spatial thinning and bias file:
+#evaluation table for variegatus with spatial thinning and bias file:
 bias_thinned_var_evalMods <- bias_thinned_var_e@models
 names(bias_thinned_var_evalMods) <- bias_thinned_var_e@results$settings
 bias_thinned_var_evalPreds <- bias_thinned_var_e@predictions
@@ -277,7 +277,7 @@ bias_thinned_tri_e <- ENMeval::ENMevaluate(thinned_tri_occs.xy, Env_sloths, bg.c
 bias_thinned_tri_evalTbl <- bias_thinned_tri_e@results
 bias_thinned_tri_evalTbl <- bias_thinned_tri_evalTbl[with(bias_thinned_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 write_csv(bias_thinned_tri_evalTbl, "./maxentoutputs/bias_thinned_tri_evalTbl.csv")
-#evalutation table for tridactylus with spatial thinning and bias file:
+#evaluation table for tridactylus with spatial thinning and bias file:
 bias_thinned_tri_evalMods <- bias_thinned_tri_e@models
 names(bias_thinned_tri_evalMods) <- bias_thinned_tri_e@results$settings
 bias_thinned_tri_evalPreds <- bias_thinned_tri_e@predictions
@@ -290,4 +290,28 @@ plot(bias_thinned_tri_pred)
 
 #save cloglog prediction
 writeRaster(bias_thinned_tri_pred, "bias_thinned_tridactylus_H_5_cloglog.tif")
+
+
+# Response curves ---------------------------------------------------------
+
+plot(thinned_var_mod, vars = c('bio10', 'bio13', 'bio18', 'bio2', 'bio3', 'bio4'), type = "cloglog")
+# Warnings:
+# Warning messages:
+#   1: In `[<-.data.frame`(`*tmp*`, , v, value = list(251.742424242424,  ... :
+#                                                       provided 100 variables to replace 1 variables
+
+plot(thinned_tri_mod, vars = c('bio8'), type = "cloglog")
+
+
+# plot(bias_var_mod, vars = c('bio10', 'bio13', 'bio18', 'bio2', 'bio3', 'bio4'), type = "cloglog")
+# Need a different format here because I used maxent.jar
+
+plot(bias_tri_mod, vars = c('bio12', 'bio18', 'bio6', 'bio7'), type = "cloglog")
+
+
+plot(bias_thinned_var_mod, vars = c('bio11', 'bio14', 'bio19', 'bio2', 'bio8'), type = "cloglog")
+
+
+plot(bias_thinned_tri_mod, vars = c('bio18', 'bio6'), type = "cloglog")
+
 
