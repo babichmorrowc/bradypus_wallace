@@ -139,6 +139,9 @@ thinned_tri_bg.grp <- thinned_tri_group.data[[2]]
 # define the vector of regularization multipliers to test
 rms <- seq(1, 5, 1)
 
+
+# Spatial thinning only ---------------------------------------------------
+
 # iterate model building over all chosen parameter settings
 thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk, bg.coords = buffer_var_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
                           method = 'user', thinned_var_occs.grp, thinned_var_bg.grp, clamp = TRUE, algorithm = "maxnet")
@@ -192,6 +195,10 @@ plot(thinned_tri_proj)
 writeRaster(thinned_tri_proj, "thinned_variegatus_LQ_3_cloglog.tif")
 
 
+
+# Bias file only ----------------------------------------------------------
+
+
 # iterate model building over all chosen parameter settings
 bias_var_e <- ENMeval::ENMevaluate(var_occs.xy, Env_sloths, bg.coords = bias_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
                                    method = 'user', var_occs.grp, var_bg.grp, clamp = TRUE, algorithm = "maxent.jar")
@@ -238,6 +245,9 @@ plot(bias_tri_pred)
 writeRaster(bias_tri_pred, "bias_tridactylus_L_4_cloglog.tif")
 
 
+# Spatial thinning + Bias file --------------------------------------------
+
+
 # iterate model building over all chosen parameter settings
 bias_thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, Env_sloths, bg.coords = bias_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
                                       method = 'user', thinned_var_occs.grp, thinned_var_bg.grp, clamp = TRUE, algorithm = "maxnet")
@@ -267,7 +277,7 @@ bias_thinned_tri_e <- ENMeval::ENMevaluate(thinned_tri_occs.xy, Env_sloths, bg.c
 bias_thinned_tri_evalTbl <- bias_thinned_tri_e@results
 bias_thinned_tri_evalTbl <- bias_thinned_tri_evalTbl[with(bias_thinned_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 write_csv(bias_thinned_tri_evalTbl, "./maxentoutputs/bias_thinned_tri_evalTbl.csv")
-#evalutation table for triiegatus with spatial thinning and bias file:
+#evalutation table for tridactylus with spatial thinning and bias file:
 bias_thinned_tri_evalMods <- bias_thinned_tri_e@models
 names(bias_thinned_tri_evalMods) <- bias_thinned_tri_e@results$settings
 bias_thinned_tri_evalPreds <- bias_thinned_tri_e@predictions
