@@ -399,7 +399,9 @@ plot(thinned_var_mod, vars = c('bio10', 'bio13', 'bio18', 'bio2', 'bio3', 'bio4'
 plot(thinned_tri_mod, vars = c('bio8'), type = "cloglog")
 
 
-# plot(bias_var_mod, vars = c('bio10', 'bio13', 'bio18', 'bio2', 'bio3', 'bio4'), type = "cloglog")
+response(bias_var_mod)
+response(bias_var_mod, var = c('bio10', 'bio11', 'bio12', 'bio13', 'bio14', 'bio15','bio17', 'bio18', 'bio19', 'bio2', 
+                                'bio3', 'bio4', 'bio5', 'bio7', 'bio8', 'bio9'))
 # Need a different format here because I used maxent.jar
 
 plot(bias_tri_mod, vars = c('bio12', 'bio18', 'bio6', 'bio7'), type = "cloglog")
