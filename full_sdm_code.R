@@ -256,6 +256,10 @@ writeRaster(bias_tri_pred, "bias_tridactylus_L_4_cloglog.tif")
 # iterate model building over all chosen parameter settings
 noiNat_bias_var_e <- ENMeval::ENMevaluate(var_occs.xy, Env_sloths, bg.coords = noiNat_bias_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
                                    method = 'user', var_occs.grp, var_bg.grp, clamp = TRUE, algorithm = "maxnet")
+# Warning message:
+#   In paste0(if (use.fC) formatC(x, format = "fg", width = 1, digits = digits) else format(x,  :
+#                                                                                             restarting interrupted promise evaluation
+
 # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 noiNat_bias_var_evalTbl <- noiNat_bias_var_e@results
 noiNat_bias_var_evalTbl <- noiNat_bias_var_evalTbl[with(noiNat_bias_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -265,11 +269,14 @@ noiNat_bias_var_evalMods <- noiNat_bias_var_e@models
 names(noiNat_bias_var_evalMods) <- noiNat_bias_var_e@results$settings
 noiNat_bias_var_evalPreds <- noiNat_bias_var_e@predictions
 # Select your model from the models list
-noiNat_bias_var_mod <- noiNat_bias_var_evalMods[["LQH_2"]]
+noiNat_bias_var_mod <- noiNat_bias_var_evalMods[["L_1"]]
 # generate cloglog prediction
 noiNat_bias_var_pred <- ENMeval::maxnet.predictRaster(noiNat_bias_var_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
 plot(noiNat_bias_var_pred)
+
+#save cloglog prediction
+writeRaster(bias_tri_pred, "noiNat_bias_variegatus_L_1_cloglog.tif")
 
 # iterate model building over all chosen parameter settings
 noiNat_bias_tri_e <- ENMeval::ENMevaluate(tri_occs.xy, Env_sloths, bg.coords = noiNat_bias_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
@@ -283,7 +290,7 @@ noiNat_bias_tri_evalMods <- noiNat_bias_tri_e@models
 names(noiNat_bias_tri_evalMods) <- noiNat_bias_tri_e@results$settings
 noiNat_bias_tri_evalPreds <- noiNat_bias_tri_e@predictions
 # Select your model from the models list
-noiNat_bias_tri_mod <- noiNat_bias_tri_evalMods[["LQH_2"]]
+noiNat_bias_tri_mod <- noiNat_bias_tri_evalMods[["L_3"]]
 # generate cloglog prediction
 noiNat_bias_tri_pred <- ENMeval::maxnet.predictRaster(noiNat_bias_tri_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
@@ -335,6 +342,51 @@ plot(bias_thinned_tri_pred)
 #save cloglog prediction
 writeRaster(bias_thinned_tri_pred, "bias_thinned_tridactylus_H_5_cloglog.tif")
 
+
+# Spatial thinning + Bias file w/o iNat -----------------------------------
+
+# iterate model building over all chosen parameter settings
+noiNat_bias_thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, Env_sloths, bg.coords = noiNat_bias_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                                           method = 'user', thinned_var_occs.grp, thinned_var_bg.grp, clamp = TRUE, algorithm = "maxnet")
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+noiNat_bias_thinned_var_evalTbl <- noiNat_bias_thinned_var_e@results
+noiNat_bias_thinned_var_evalTbl <- noiNat_bias_thinned_var_evalTbl[with(noiNat_bias_thinned_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
+write_csv(noiNat_bias_thinned_var_evalTbl, "./maxentoutputs/noiNat_bias_thinned_var_evalTbl.csv")
+#evaluation table for variegatus with spatial thinning and bias file:
+noiNat_bias_thinned_var_evalMods <- noiNat_bias_thinned_var_e@models
+names(noiNat_bias_thinned_var_evalMods) <- noiNat_bias_thinned_var_e@results$settings
+noiNat_bias_thinned_var_evalPreds <- noiNat_bias_thinned_var_e@predictions
+# Select your model from the models list
+noiNat_bias_thinned_var_mod <- noiNat_bias_thinned_var_evalMods[["L_5"]]
+# generate cloglog prediction
+noiNat_bias_thinned_var_pred <- ENMeval::maxnet.predictRaster(noiNat_bias_thinned_var_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(noiNat_bias_thinned_var_pred)
+
+#save cloglog prediction
+writeRaster(noiNat_bias_thinned_var_pred, "noiNat_bias_thinned_variegatus_L_5_cloglog.tif")
+
+
+# iterate model building over all chosen parameter settings
+noiNat_bias_thinned_tri_e <- ENMeval::ENMevaluate(thinned_tri_occs.xy, Env_sloths, bg.coords = noiNat_bias_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                                           method = 'user', thinned_tri_occs.grp, thinned_tri_bg.grp, clamp = TRUE, algorithm = "maxnet")
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+noiNat_bias_thinned_tri_evalTbl <- noiNat_bias_thinned_tri_e@results
+noiNat_bias_thinned_tri_evalTbl <- noiNat_bias_thinned_tri_evalTbl[with(noiNat_bias_thinned_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
+write_csv(noiNat_bias_thinned_tri_evalTbl, "./maxentoutputs/noiNat_bias_thinned_tri_evalTbl.csv")
+#evaluation table for tridactylus with spatial thinning and bias file:
+noiNat_bias_thinned_tri_evalMods <- noiNat_bias_thinned_tri_e@models
+names(noiNat_bias_thinned_tri_evalMods) <- noiNat_bias_thinned_tri_e@results$settings
+noiNat_bias_thinned_tri_evalPreds <- noiNat_bias_thinned_tri_e@predictions
+# Select your model from the models list
+noiNat_bias_thinned_tri_mod <- noiNat_bias_thinned_tri_evalMods[["H_5"]]
+# generate cloglog prediction
+noiNat_bias_thinned_tri_pred <- ENMeval::maxnet.predictRaster(noiNat_bias_thinned_tri_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(noiNat_bias_thinned_tri_pred)
+
+#save cloglog prediction
+writeRaster(noiNat_bias_thinned_tri_pred, "noiNat_bias_thinned_tridactylus_H_5_cloglog.tif")
 
 # Response curves ---------------------------------------------------------
 
