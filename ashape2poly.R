@@ -1,4 +1,4 @@
-# Function to convert alpha hull to a polygon
+# Function to convert alpha shape to a polygon
 
 ashape2poly <- function(hull){
   require(alphahull)
@@ -24,10 +24,3 @@ ashape2poly <- function(hull){
   pathX = c(pathX, pathX[1])
   return(pathX)
 }
-
-poly <- ahull2poly(var_bg_alpha20)
-
-# now show the alpha shape plot with our poly on top
-plot(var_bg_alpha20, lwd = 10, col = "gray")
-# get the points from the ashape object
-lines(var_bg_alpha20$xahull[pathX, ], lwd = 2)

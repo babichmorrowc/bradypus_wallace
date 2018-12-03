@@ -7,6 +7,7 @@ library(ENMeval)
 library(dplyr)
 library(ggmap)
 library(alphahull)
+source("ahull_sp_rfunctions.R")
 
 # Import occurrence data --------------------------------------------------
 
@@ -145,9 +146,96 @@ ggmap(map) +
 
 var_bg_alpha20 <- ahull(x = thinned_var_occs$longitude, y = thinned_var_occs$latitude, alpha = 20)
 plot(var_bg_alpha20)
+var_bg_alpha20 <- ahull2poly(var_bg_alpha20)
+plot(var_bg_alpha20)
+colnames(var_bg_alpha20@polygons[[1]]@Polygons[[1]]@coords) <- c("long", "lat")
 
-
+tri_bg_alpha20 <- ahull(x = thinned_tri_occs$longitude, y = thinned_tri_occs$latitude, alpha = 20)
+plot(tri_bg_alpha20)
+tri_bg_alpha20 <- ahull2poly(tri_bg_alpha20)
+plot(tri_bg_alpha20)
+colnames(tri_bg_alpha20@polygons[[1]]@Polygons[[1]]@coords) <- c("long", "lat")
 
 #Visualize the background buffer
-ggmap(map)
-arc()  
+ggmap(map) +
+  geom_polygon(data = var_bg_alpha20, aes(x = long, y = lat), fill = "darkgoldenrod3", alpha = 0.7) +
+  geom_point(data = thinned_var_occs, aes(x = longitude, y = latitude), color = "darkgoldenrod2") +
+  geom_polygon(data = tri_bg_alpha20, aes(x = long, y = lat), fill = "purple3", alpha = 0.7) +
+  geom_point(data = thinned_tri_occs, aes(x = longitude, y = latitude), color = "purple4")
+
+
+
+var_bg_alpha10 <- ahull(x = thinned_var_occs$longitude, y = thinned_var_occs$latitude, alpha = 10)
+plot(var_bg_alpha10)
+var_bg_alpha10 <- ahull2poly(var_bg_alpha10)
+plot(var_bg_alpha10)
+colnames(var_bg_alpha10@polygons[[1]]@Polygons[[1]]@coords) <- c("long", "lat")
+
+tri_bg_alpha10 <- ahull(x = thinned_tri_occs$longitude, y = thinned_tri_occs$latitude, alpha = 10)
+plot(tri_bg_alpha10)
+tri_bg_alpha10 <- ahull2poly(tri_bg_alpha10)
+plot(tri_bg_alpha10)
+colnames(tri_bg_alpha10@polygons[[1]]@Polygons[[1]]@coords) <- c("long", "lat")
+
+#Visualize the background buffer
+ggmap(map) +
+  geom_polygon(data = var_bg_alpha10, aes(x = long, y = lat), fill = "darkgoldenrod3", alpha = 0.7) +
+  geom_point(data = thinned_var_occs, aes(x = longitude, y = latitude), color = "darkgoldenrod2") +
+  geom_polygon(data = tri_bg_alpha10, aes(x = long, y = lat), fill = "purple3", alpha = 0.7) +
+  geom_point(data = thinned_tri_occs, aes(x = longitude, y = latitude), color = "purple4")
+
+
+var_bg_alpha50 <- ahull(x = thinned_var_occs$longitude, y = thinned_var_occs$latitude, alpha = 50)
+plot(var_bg_alpha50)
+var_bg_alpha50 <- ahull2poly(var_bg_alpha50)
+plot(var_bg_alpha50)
+colnames(var_bg_alpha50@polygons[[1]]@Polygons[[1]]@coords) <- c("long", "lat")
+
+tri_bg_alpha50 <- ahull(x = thinned_tri_occs$longitude, y = thinned_tri_occs$latitude, alpha = 50)
+plot(tri_bg_alpha50)
+tri_bg_alpha50 <- ahull2poly(tri_bg_alpha50)
+plot(tri_bg_alpha50)
+colnames(tri_bg_alpha50@polygons[[1]]@Polygons[[1]]@coords) <- c("long", "lat")
+
+#Visualize the background buffer
+ggmap(map) +
+  geom_polygon(data = var_bg_alpha50, aes(x = long, y = lat), fill = "darkgoldenrod3", alpha = 0.7) +
+  geom_point(data = thinned_var_occs, aes(x = longitude, y = latitude), color = "darkgoldenrod2") +
+  geom_polygon(data = tri_bg_alpha50, aes(x = long, y = lat), fill = "purple3", alpha = 0.7) +
+  geom_point(data = thinned_tri_occs, aes(x = longitude, y = latitude), color = "purple4")
+
+
+# Background from buffered alpha hulls ------------------------------------
+
+var_bg_alpha10_buffer <- rgeos::gBuffer(var_bg_alpha10, width = 1)
+tri_bg_alpha10_buffer <- rgeos::gBuffer(tri_bg_alpha10, width = 1)
+
+#Visualize the background buffer
+ggmap(map) +
+  geom_polygon(data = var_bg_alpha10_buffer, aes(x = long, y = lat), fill = "darkgoldenrod3", alpha = 0.7) +
+  geom_point(data = thinned_var_occs, aes(x = longitude, y = latitude), color = "darkgoldenrod2") +
+  geom_polygon(data = tri_bg_alpha10_buffer, aes(x = long, y = lat), fill = "purple3", alpha = 0.7) +
+  geom_point(data = thinned_tri_occs, aes(x = longitude, y = latitude), color = "purple4")
+
+
+var_bg_alpha20_buffer <- rgeos::gBuffer(var_bg_alpha20, width = 1)
+tri_bg_alpha20_buffer <- rgeos::gBuffer(tri_bg_alpha20, width = 1)
+
+#Visualize the background buffer
+ggmap(map) +
+  geom_polygon(data = var_bg_alpha20_buffer, aes(x = long, y = lat), fill = "darkgoldenrod3", alpha = 0.7) +
+  geom_point(data = thinned_var_occs, aes(x = longitude, y = latitude), color = "darkgoldenrod2") +
+  geom_polygon(data = tri_bg_alpha20_buffer, aes(x = long, y = lat), fill = "purple3", alpha = 0.7) +
+  geom_point(data = thinned_tri_occs, aes(x = longitude, y = latitude), color = "purple4")
+
+
+
+var_bg_alpha50_buffer <- rgeos::gBuffer(var_bg_alpha50, width = 1)
+tri_bg_alpha50_buffer <- rgeos::gBuffer(tri_bg_alpha50, width = 1)
+
+#Visualize the background buffer
+ggmap(map) +
+  geom_polygon(data = var_bg_alpha50_buffer, aes(x = long, y = lat), fill = "darkgoldenrod3", alpha = 0.7) +
+  geom_point(data = thinned_var_occs, aes(x = longitude, y = latitude), color = "darkgoldenrod2") +
+  geom_polygon(data = tri_bg_alpha50_buffer, aes(x = long, y = lat), fill = "purple3", alpha = 0.7) +
+  geom_point(data = thinned_tri_occs, aes(x = longitude, y = latitude), color = "purple4")
