@@ -6,8 +6,6 @@ library(rgeos)
 library(ENMeval)
 library(dplyr)
 library(ggmap)
-library(alphahull)
-source("ahull_sp_rfunctions.R")
 
 # Import occurrence data --------------------------------------------------
 
@@ -134,6 +132,18 @@ ggmap(map) +
   geom_polygon(data = tri_bgExt_2, aes(x = long, y = lat, group = group), fill = "deepskyblue", alpha = 0.7) +
   geom_polygon(data = tor_bgExt_2, aes(x = long, y = lat, group = group), fill = "mediumorchid2", alpha = 0.7)
 
+#Buffer by 4 degree around points
+var_bgExt_4 <- rgeos::gBuffer(thinned_var_occs.xy, width = 4)
+tri_bgExt_4 <- rgeos::gBuffer(thinned_tri_occs.xy, width = 4)
+tor_bgExt_4 <- rgeos::gBuffer(thinned_tor_occs.xy, width = 4)
+
+#Visualize the background buffer
+ggmap(map) +
+  geom_polygon(data = var_bgExt_4, aes(x = long, y = lat, group = group), fill = "darkorange1", alpha = 0.7) +
+  geom_polygon(data = tri_bgExt_4, aes(x = long, y = lat, group = group), fill = "deepskyblue", alpha = 0.7) +
+  geom_polygon(data = tor_bgExt_4, aes(x = long, y = lat, group = group), fill = "mediumorchid2", alpha = 0.7)
+
+
 # crop the environmental rasters by the background extent shape
 var_envsBgCrop <- raster::crop(Env_sloths, var_bgExt_2)
 tri_envsBgCrop <- raster::crop(Env_sloths, tri_bgExt_2)
@@ -151,7 +161,44 @@ buffer_var_bg.xy <- as.data.frame(buffer_var_bg.xy)
 buffer_tri_bg.xy <- as.data.frame(buffer_tri_bg.xy)
 buffer_tor_bg.xy <- as.data.frame(buffer_tor_bg.xy)
 
+
+# crop the environmental rasters by the background extent shape
+var_envsBgCrop_4 <- raster::crop(Env_sloths, var_bgExt_4)
+tri_envsBgCrop_4 <- raster::crop(Env_sloths, tri_bgExt_4)
+tor_envsBgCrop_4 <- raster::crop(Env_sloths, tor_bgExt_4)
+# mask the background extent shape from the cropped raster
+var_envsBgMsk_4 <- raster::mask(var_envsBgCrop_4, var_bgExt_4)
+tri_envsBgMsk_4 <- raster::mask(tri_envsBgCrop_4, tri_bgExt_4)
+tor_envsBgMsk_4 <- raster::mask(tor_envsBgCrop_4, tor_bgExt_4)
+# sample random background points
+buffer_var_bg.xy_4 <- dismo::randomPoints(var_envsBgMsk_4, 10000)
+buffer_tri_bg.xy_4 <- dismo::randomPoints(tri_envsBgMsk_4, 10000)
+buffer_tor_bg.xy_4 <- dismo::randomPoints(tor_envsBgMsk_4, 10000)
+# convert matrix output to data frame
+buffer_var_bg.xy_4 <- as.data.frame(buffer_var_bg.xy_4)
+buffer_tri_bg.xy_4 <- as.data.frame(buffer_tri_bg.xy_4)
+buffer_tor_bg.xy_4 <- as.data.frame(buffer_tor_bg.xy_4)
+
 # Partition occurrence data -----------------------------------------------
+
+# variegatus: Partition using block method
+thinned_var_group.data <- ENMeval::get.block(occ = thinned_var_occs.xy, bg.coords = buffer_var_bg.xy)
+
+# tridactylus: Partition using jackknife
+thinned_tri_group.data <- ENMeval::get.jackknife(occ = thinned_tri_occs.xy, bg.coords = buffer_tri_bg.xy)
+
+# torquatus: Partition using jackknife
+thinned_tor_group.data <- ENMeval::get.jackknife(occ = thinned_tor_occs.xy, bg.coords = buffer_tor_bg.xy)
+
+# pull out the occurrence and background partition group numbers from the list
+thinned_var_occs.grp <- thinned_var_group.data[[1]]
+thinned_var_bg.grp <- thinned_var_group.data[[2]]
+thinned_tri_occs.grp <- thinned_tri_group.data[[1]]
+thinned_tri_bg.grp <- thinned_tri_group.data[[2]]
+thinned_tor_occs.grp <- thinned_tor_group.data[[1]]
+thinned_tor_bg.grp <- thinned_tor_group.data[[2]]
+
+# 4 degree buffer
 
 # variegatus: Partition using block method
 thinned_var_group.data <- ENMeval::get.block(occ = thinned_var_occs.xy, bg.coords = buffer_var_bg.xy)
@@ -179,7 +226,7 @@ rms <- seq(1, 5, 1)
 
 # iterate model building over all chosen parameter settings
 thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk, bg.coords = buffer_var_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
-                                      method = 'user', thinned_var_occs.grp, thinned_var_bg.grp, clamp = TRUE, algorithm = "maxnet")
+                                      method = 'block', clamp = TRUE, algorithm = "maxnet")
 # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_var_evalTbl <- thinned_var_e@results
 thinned_var_evalTbl <- thinned_var_evalTbl[with(thinned_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -203,12 +250,38 @@ plot(thinned_var_proj)
 #save cloglog prediction
 writeRaster(thinned_var_proj, "thinned_variegatus_L_5_cloglog.tif")
 
+# iterate model building over all chosen parameter settings
+thinned_var_e_4 <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk_4, bg.coords = buffer_var_bg.xy_4, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                                      method = 'block', clamp = TRUE, algorithm = "maxnet")
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+thinned_var_evalTbl_4 <- thinned_var_e_4@results
+thinned_var_evalTbl_4 <- thinned_var_evalTbl_4[with(thinned_var_evalTbl_4, order(avg.test.or10pct, -avg.test.AUC)), ]
+View(thinned_var_evalTbl_4)
+write_csv(thinned_var_evalTbl_4, "./maxentoutputs/thinned_var_evalTbl_4.csv")
+#evaluation table for variegatus with spatial thinning and bias file:
+thinned_var_evalMods_4 <- thinned_var_e_4@models
+names(thinned_var_evalMods_4) <- thinned_var_e_4@results$settings
+thinned_var_evalPreds_4 <- thinned_var_e_4@predictions
+# Select your model from the models list
+thinned_var_mod_4 <- thinned_var_evalMods_4[["L_5"]]
+# generate cloglog prediction
+thinned_var_pred_4 <- ENMeval::maxnet.predictRaster(thinned_var_mod_4, var_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(thinned_var_pred_4)
+#project to entire extent
+thinned_var_proj_4 <- ENMeval::maxnet.predictRaster(thinned_var_mod_4, Env_sloths, type = 'cloglog', clamp = TRUE)
+#plot the model prediction
+plot(thinned_var_proj_4)
+
+#save cloglog prediction
+writeRaster(thinned_var_proj_4, "thinned_variegatus_L_5_cloglog.tif")
+
 
 # Bradypus tridactylus
 
 # iterate model building over all chosen parameter settings
 thinned_tri_e <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk, bg.coords = buffer_tri_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
-                                      method = 'user', thinned_tri_occs.grp, thinned_tri_bg.grp, clamp = TRUE, algorithm = "maxnet")
+                                      method = 'jackknife', clamp = TRUE, algorithm = "maxnet")
  # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_tri_evalTbl <- thinned_tri_e@results
 thinned_tri_evalTbl <- thinned_tri_evalTbl[with(thinned_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -232,12 +305,43 @@ plot(thinned_tri_proj)
 #save cloglog prediction
 writeRaster(thinned_tri_proj, "thinned_tridactylus_L_5_cloglog.tif")
 
+# iterate model building over all chosen parameter settings
+thinned_tri_e_4 <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk_4, bg.coords = buffer_tri_bg.xy_4, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                                      method = 'jackknife', clamp = TRUE, algorithm = "maxnet")
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+thinned_tri_evalTbl_4 <- thinned_tri_e_4@results
+thinned_tri_evalTbl_4 <- thinned_tri_evalTbl_4[with(thinned_tri_evalTbl_4, order(avg.test.or10pct, -avg.test.AUC)), ]
+View(thinned_tri_evalTbl_4)
+write_csv(thinned_tri_evalTbl_4, "./maxentoutputs/thinned_tri_evalTbl_4.csv")
+#evaluation table for tridactylus with spatial thinning and bias file:
+thinned_tri_evalMods_4 <- thinned_tri_e_4@models
+names(thinned_tri_evalMods_4) <- thinned_tri_e_4@results$settings
+thinned_tri_evalPreds_4 <- thinned_tri_e_4@predictions
+# Select your model from the models list
+thinned_tri_mod_4_H5 <- thinned_tri_evalMods_4[["H_5"]]
+thinned_tri_mod_4_LQH5 <- thinned_tri_evalMods_4[["LQH_5"]]
+# generate cloglog prediction
+thinned_tri_pred_4_H5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_H5, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
+thinned_tri_pred_4_LQH5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQH5, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(thinned_tri_pred_4_H5)
+plot(thinned_tri_pred_4_LQH5)
+#project to entire extent
+thinned_tri_proj_4_H5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_H5, Env_sloths, type = 'cloglog', clamp = TRUE)
+thinned_tri_proj_4_LQH5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQH5, Env_sloths, type = 'cloglog', clamp = TRUE)
+#plot the model prediction
+plot(thinned_tri_proj_4_H5)
+plot(thinned_tri_proj_4_LQH5)
+
+#save cloglog prediction
+#writeRaster(thinned_tri_proj_4, "thinned_tridactylus_H_5_cloglog.tif")
+
 
 # Bradypus torquatus
 
 # iterate model building over all chosen parameter settings
 thinned_tor_e <- ENMeval::ENMevaluate(thinned_tor_occs.xy, tor_envsBgMsk, bg.coords = buffer_tor_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
-                                      method = 'user', thinned_tor_occs.grp, thinned_tor_bg.grp, clamp = TRUE, algorithm = "maxnet")
+                                      method = 'jackknife', clamp = TRUE, algorithm = "maxnet")
 # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_tor_evalTbl <- thinned_tor_e@results
 thinned_tor_evalTbl <- thinned_tor_evalTbl[with(thinned_tor_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -261,6 +365,31 @@ plot(thinned_tor_proj)
 #save cloglog prediction
 writeRaster(thinned_tor_proj, "thinned_torquatus_L_2_cloglog.tif")
 
+# iterate model building over all chosen parameter settings
+thinned_tor_e_4 <- ENMeval::ENMevaluate(thinned_tor_occs.xy, tor_envsBgMsk_4, bg.coords = buffer_tor_bg.xy_4, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+                                      method = 'jackknife', clamp = TRUE, algorithm = "maxnet")
+# unpack the results data frame, the list of models, and the RasterStack of raw predictions
+thinned_tor_evalTbl_4 <- thinned_tor_e_4@results
+thinned_tor_evalTbl_4 <- thinned_tor_evalTbl_4[with(thinned_tor_evalTbl_4, order(avg.test.or10pct, -avg.test.AUC)), ]
+View(thinned_tor_evalTbl_4)
+write_csv(thinned_tor_evalTbl_4, "./maxentoutputs/thinned_tor_evalTbl_4.csv")
+#evaluation table for torquatus with spatial thinning and bias file:
+thinned_tor_evalMods_4 <- thinned_tor_e_4@models
+names(thinned_tor_evalMods_4) <- thinned_tor_e_4@results$settings
+thinned_tor_evalPreds_4 <- thinned_tor_e_4@predictions
+# Select your model from the models list
+thinned_tor_mod_4 <- thinned_tor_evalMods_4[["H_3"]]
+# generate cloglog prediction
+thinned_tor_pred_4 <- ENMeval::maxnet.predictRaster(thinned_tor_mod_4, tor_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(thinned_tor_pred_4)
+#project to entire extent
+thinned_tor_proj_4 <- ENMeval::maxnet.predictRaster(thinned_tor_mod_4, Env_sloths, type = 'cloglog', clamp = TRUE)
+#plot the model prediction
+plot(thinned_tor_proj_4)
+
+#save cloglog prediction
+writeRaster(thinned_tor_proj_4, "thinned_torquatus_L_2_cloglog.tif")
 
 
 # Response curves ---------------------------------------------------------
