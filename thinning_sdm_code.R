@@ -286,11 +286,20 @@ writeRaster(thinned_var_proj_4, "thinned_variegatus_L_5_cloglog.tif")
 # iterate model building over all chosen parameter settings
 thinned_tri_e <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk, bg.coords = buffer_tri_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
                                       method = 'jackknife', clamp = TRUE, algorithm = "maxnet")
+thinned_tri_e_newrms <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk, bg.coords = buffer_tri_bg.xy, RMvalues = rms_2, fc = c('L', 'LQ', 'H', 'LQH'), 
+                                      method = 'jackknife', clamp = TRUE, algorithm = "maxnet")
+
  # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_tri_evalTbl <- thinned_tri_e@results
 thinned_tri_evalTbl <- thinned_tri_evalTbl[with(thinned_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 View(thinned_tri_evalTbl)
 write_csv(thinned_tri_evalTbl, "./maxentoutputs/thinned_tri_evalTbl.csv")
+
+thinned_tri_evalTbl_newrms <- thinned_tri_e_newrms@results
+thinned_tri_evalTbl_newrms <- thinned_tri_evalTbl_newrms[with(thinned_tri_evalTbl_newrms, order(avg.test.or10pct, -avg.test.AUC)), ]
+View(thinned_tri_evalTbl_newrms)
+write_csv(thinned_tri_evalTbl_newrms, "./maxentoutputs/thinned_tri_evalTbl_newrms.csv")
+
 #evaluation table for tridactylus with spatial thinning and bias file:
 thinned_tri_evalMods <- thinned_tri_e@models
 names(thinned_tri_evalMods) <- thinned_tri_e@results$settings
@@ -308,6 +317,22 @@ plot(thinned_tri_proj)
 
 #save cloglog prediction
 writeRaster(thinned_tri_proj, "thinned_tridactylus_L_5_cloglog.tif")
+
+#evaluation table for tridactylus with spatial thinning and bias file:
+thinned_tri_evalMods_newrms <- thinned_tri_e_newrms@models
+names(thinned_tri_evalMods_newrms) <- thinned_tri_e_newrms@results$settings
+thinned_tri_evalPreds_newrms <- thinned_tri_e_newrms@predictions
+# Select your model from the models list
+thinned_tri_mod_newrms <- thinned_tri_evalMods_newrms[["H_4"]]
+# generate cloglog prediction
+thinned_tri_pred_newrms <- ENMeval::maxnet.predictRaster(thinned_tri_mod_newrms, tri_envsBgMsk, type = 'cloglog', clamp = TRUE)
+# plot the model prediction
+plot(thinned_tri_pred_newrms)
+#project to entire extent
+thinned_tri_proj_newrms <- ENMeval::maxnet.predictRaster(thinned_tri_mod_newrms, Env_sloths, type = 'cloglog', clamp = TRUE)
+#plot the model prediction
+plot(thinned_tri_proj_newrms)
+
 
 # iterate model building over all chosen parameter settings
 thinned_tri_e_4 <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk_4, bg.coords = buffer_tri_bg.xy_4, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
