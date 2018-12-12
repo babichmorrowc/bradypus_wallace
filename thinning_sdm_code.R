@@ -222,6 +222,7 @@ thinned_tor_bg.grp <- thinned_tor_group.data[[2]]
 
 # define the vector of regularization multipliers to test
 rms <- seq(1, 5, 1)
+rms_2 <- seq(4, 8, 0.5)
 
 # Bradypus variegatus
 
@@ -352,20 +353,15 @@ thinned_tri_evalMods_6 <- thinned_tri_e_6@models
 names(thinned_tri_evalMods_6) <- thinned_tri_e_6@results$settings
 thinned_tri_evalPreds_6 <- thinned_tri_e_6@predictions
 # Select your model from the models list
-thinned_tri_mod_6_H5 <- thinned_tri_evalMods_6[["H_5"]]
-thinned_tri_mod_6_LQH5 <- thinned_tri_evalMods_6[["LQH_5"]]
+thinned_tri_mod_6 <- thinned_tri_evalMods_6[["H_5"]]
 # generate cloglog prediction
-thinned_tri_pred_6_H5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_6_H5, tri_envsBgMsk_6, type = 'cloglog', clamp = TRUE)
-thinned_tri_pred_6_LQH5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_6_LQH5, tri_envsBgMsk_6, type = 'cloglog', clamp = TRUE)
+thinned_tri_pred_6 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_6, tri_envsBgMsk_6, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
-plot(thinned_tri_pred_6_H5)
-plot(thinned_tri_pred_6_LQH5)
+plot(thinned_tri_pred_6)
 #project to entire extent
-thinned_tri_proj_6_H5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_6_H5, Env_sloths, type = 'cloglog', clamp = TRUE)
-thinned_tri_proj_6_LQH5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_6_LQH5, Env_sloths, type = 'cloglog', clamp = TRUE)
+thinned_tri_proj_6 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_6, Env_sloths, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
-plot(thinned_tri_proj_6_H5)
-plot(thinned_tri_proj_6_LQH5)
+plot(thinned_tri_proj_6)
 
 #save cloglog prediction
 #writeRaster(thinned_tri_proj_6, "thinned_tridactylus_H_5_cloglog.tif")
