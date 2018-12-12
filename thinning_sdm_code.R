@@ -6,6 +6,7 @@ library(rgeos)
 library(ENMeval)
 library(dplyr)
 library(ggmap)
+library(readr)
 
 # Import occurrence data --------------------------------------------------
 
@@ -251,8 +252,10 @@ plot(thinned_var_proj)
 writeRaster(thinned_var_proj, "thinned_variegatus_L_5_cloglog.tif")
 
 # iterate model building over all chosen parameter settings
+# thinned_var_e_4 <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk_4, bg.coords = buffer_var_bg.xy_4, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
+#                                       method = 'block', clamp = TRUE, algorithm = "maxnet")
 thinned_var_e_4 <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk_4, bg.coords = buffer_var_bg.xy_4, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
-                                      method = 'block', clamp = TRUE, algorithm = "maxnet")
+                                        method = 'block', clamp = TRUE, algorithm = "maxent.jar")
 # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_var_evalTbl_4 <- thinned_var_e_4@results
 thinned_var_evalTbl_4 <- thinned_var_evalTbl_4[with(thinned_var_evalTbl_4, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -263,7 +266,7 @@ thinned_var_evalMods_4 <- thinned_var_e_4@models
 names(thinned_var_evalMods_4) <- thinned_var_e_4@results$settings
 thinned_var_evalPreds_4 <- thinned_var_e_4@predictions
 # Select your model from the models list
-thinned_var_mod_4 <- thinned_var_evalMods_4[["L_5"]]
+thinned_var_mod_4 <- thinned_var_evalMods_4[["L_1"]]
 # generate cloglog prediction
 thinned_var_pred_4 <- ENMeval::maxnet.predictRaster(thinned_var_mod_4, var_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
