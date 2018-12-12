@@ -6,6 +6,10 @@ library(alphahull)
 #grids <- list.files("/Users/hellenfellows/Desktop/bio_2-5m_bil", pattern = "*.bil$")
 #envs <- stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids))
 
+# 2 degree buffer ---------------------------------------------------------
+
+
+
 #Pete's code
 
 ####create bg coordinates, extract env values for bg coords and locs
@@ -23,6 +27,9 @@ scores <- tri_pca$x
 plot(scores)
 points(scores[1:15,], col = "red") # change 15 to the number of occs you have
 
+# 4 degree buffer ---------------------------------------------------------
+
+
 ####create bg coordinates, extract env values for bg coords and locs
 bgvals_4 <- extract(tri_envsBgMsk_4, buffer_tri_bg.xy_4)
 locvals_4 <- extract(tri_envsBgMsk_4, thinned_tri_occs[, c('longitude', 'latitude')])
@@ -37,24 +44,6 @@ scores_4 <- tri_pca_4$x
 # plotting
 plot(scores_4)
 points(scores_4[1:15,], col = "red") # change 15 to the number of occs you have
-
-
-
-####create bg coordinates, extract env values for bg coords and locs
-var_bgvals<-extract(var_envsBgMsk, buffer_var_bg.xy)
-var_locvals<-extract(var_envsBgMsk, thinned_var_occs[, c('longitude', 'latitude')])
-## put them together
-var_bothvals<-rbind(var_locvals, var_bgvals)
-# Run pca
-var_pca<-prcomp(var_bothvals)
-summary(var_pca)
-# ggbiplot(tri_pca)
-# get scores only
-var_scores <- var_pca$x
-# plotting
-plot(var_scores)
-points(var_scores[1:132,], col = "red", pch = 19)
-
 
 # Alpha hull --------------------------------------------------------------
 
@@ -86,4 +75,8 @@ alpha_scores <- alpha_tri_pca$x
 # plotting
 plot(alpha_scores)
 points(alpha_scores[1:15,], col = "red") # change 15 to the number of occs you have
+
+
+# 6 degree buffer ---------------------------------------------------------
+
 
