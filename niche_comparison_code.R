@@ -11,6 +11,7 @@ library(rgeos)
 library(spocc)
 library(raster)
 library(ecospat)
+library(readr)
 
 
 # Bradypus data -----------------------------------------------------------
@@ -18,17 +19,20 @@ library(ecospat)
 #import data from csvs (cleaned version from literature)
 variegatus <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_variegatus_litdata.csv")
 tridactylus <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_tridactylus_litdata.csv")
+torquatus <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_torquatus_litdata.csv")
 
 # Change the species columns to just the species' names
 variegatus[1] <- as.factor('variegatus')
 tridactylus[1] <- as.factor('tridactylus')
+torquatus[1] <- as.factor('torquatus')
 # Change column name of first column
 names(variegatus)[1] <- "species"
 names(tridactylus)[1] <- "species"
+names(torquatus)[1] <- "species"
 
 #get extent
-combine.lat <- c(variegatus$latitude, tridactylus$latitude)
-combine.lon <- c(variegatus$longitude, tridactylus$longitude)
+combine.lat <- c(variegatus$latitude, tridactylus$latitude, torquatus$latitude)
+combine.lon <- c(variegatus$longitude, tridactylus$longitude, torquatus$longitude)
 ext_sloths <- extent(c(min(combine.lon)-5, max(combine.lon)+5, min(combine.lat)-5, max(combine.lat)+5))
 
 #Get environmental data
@@ -41,28 +45,45 @@ Env_sloths = crop(sta, ext_sloths)
 
 #Load rasters
 
-var_raster <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/variegatus2_layer.asc.txt")
+var_raster <- raster("thinned_variegatus_L_1_cloglog.tif")
 plot(var_raster)
 
-tri_raster <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/tridactylus2_layer.asc.txt")
-plot(tri_raster)
+tri_raster_H5 <- raster("thinned_tridactylus_H_5_cloglog.tif")
+plot(tri_raster_H5)
+tri_raster_LQH5 <- raster("thinned_tridactylus_LQH_5_cloglog.tif")
+plot(tri_raster_LQH5)
 
-#crop rasters to get same extent
-var_raster_crop <- crop(var_raster, tri_raster@extent)
-tri_raster_crop <- crop(tri_raster, var_raster_crop@extent)
+tor_raster <- raster("thinned_torquatus_H_3_cloglog.tif")
+plot(tor_raster)
+
 #Check that extents are the same
-var_raster_crop@extent
-tri_raster_crop@extent
-
-plot(var_raster_crop)
-plot(tri_raster_crop)
+var_raster@extent
+tri_raster_H5@extent
+tri_raster_LQH5@extent
+tor_raster@extent
 
 #Calculate Schoener's D using dismo
-sloth_overlap <- nicheOverlap(var_raster_crop, tri_raster_crop, stat='D', mask=TRUE, checkNegatives=TRUE)
-sloth_overlap
+var_triH5_overlap <- nicheOverlap(var_raster, tri_raster_H5, stat='D', mask=TRUE, checkNegatives=TRUE)
+var_triH5_overlap
 
-ENMOverlap<-raster.overlap(var_raster_crop,tri_raster_crop)
-ENMOverlap
+var_triLQH5_overlap <- nicheOverlap(var_raster, tri_raster_LQH5, stat='D', mask=TRUE, checkNegatives=TRUE)
+var_triLQH5_overlap
+
+var_tor_overlap <- nicheOverlap(var_raster, tor_raster, stat='D', mask=TRUE, checkNegatives=TRUE)
+var_tor_overlap
+
+tor_triH5_overlap <- nicheOverlap(tor_raster, tri_raster_H5, stat='D', mask=TRUE, checkNegatives=TRUE)
+tor_triH5_overlap
+
+tor_triLQH5_overlap <- nicheOverlap(tor_raster, tri_raster_LQH5, stat='D', mask=TRUE, checkNegatives=TRUE)
+tor_triLQH5_overlap
+
+triH5_triLQH5_overlap <- nicheOverlap(tri_raster_H5, tri_raster_LQH5, stat='D', mask=TRUE, checkNegatives=TRUE)
+triH5_triLQH5_overlap
+
+
+var_triH5_ENMOverlap<-raster.overlap(var_raster,tri_raster_H5)
+var_triH5_ENMOverlap
 
 # Make environmental PCA --------------------------------------------------
 
