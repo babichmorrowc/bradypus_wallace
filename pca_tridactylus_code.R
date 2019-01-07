@@ -8,8 +8,6 @@ library(alphahull)
 
 # 2 degree buffer ---------------------------------------------------------
 
-
-
 #Pete's code
 
 ####create bg coordinates, extract env values for bg coords and locs
@@ -79,4 +77,22 @@ points(alpha_scores[1:15,], col = "red") # change 15 to the number of occs you h
 
 # 6 degree buffer ---------------------------------------------------------
 
+tri_bgExt_6 <- rgeos::gBuffer(thinned_tri_occs.xy, width = 6)
+tri_envsBgCrop_6 <- raster::crop(Env_sloths, tri_bgExt_6)
+tri_envsBgMsk_6 <- raster::mask(tri_envsBgCrop_6, tri_bgExt_6)
+buffer_tri_bg.xy_6 <- dismo::randomPoints(tri_envsBgMsk_6, 10000)
 
+####create bg coordinates, extract env values for bg coords and locs
+bgvals_6 <- extract(tri_envsBgMsk_6, buffer_tri_bg.xy_6)
+locvals_6 <- extract(tri_envsBgMsk_6, thinned_tri_occs[, c('longitude', 'latitude')])
+## put them together
+bothvals_6<-rbind(locvals_6, bgvals_6)
+# Run pca
+tri_pca_6 <- prcomp(bothvals_6)
+summary(tri_pca_6)
+# ggbiplot(tri_pca)
+# get scores only
+scores_6 <- tri_pca_6$x
+# plotting
+plot(scores_6)
+points(scores_6[1:15,], col = "red") # change 15 to the number of occs you have
