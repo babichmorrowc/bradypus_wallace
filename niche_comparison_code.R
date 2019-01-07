@@ -87,30 +87,40 @@ var_triH5_ENMOverlap
 
 # Make environmental PCA --------------------------------------------------
 
-#background by radius
-bg_var = background.points.buffer(variegatus[,2:3], radius = 200000, n = 10*nrow(variegatus), mask = Env_sloths[[1]])
-bg_tri = background.points.buffer(tridactylus[,2:3], radius = 200000, n = 10*nrow(tridactylus), mask = Env_sloths[[1]])
+bg_var <- buffer_var_bg.xy_4
+colnames(bg_var) <- c("longitude", "latitude")
+
+bg_tri <- buffer_tri_bg.xy_4
+colnames(bg_tri) <- c("longitude", "latitude")
+
+bg_tor <- buffer_tor_bg.xy_4
+colnames(bg_tor) <- c("longitude", "latitude")
 
 # Get environmental data
-extract_var = na.omit(cbind(variegatus[,2:3], extract(Env_sloths, variegatus[,2:3]), rep(1, nrow(variegatus))))
-extract_tri = na.omit(cbind(tridactylus[,2:3], extract(Env_sloths, tridactylus[,2:3]), rep(1, nrow(tridactylus))))
+extract_var = na.omit(cbind(thinned_var_occs[,2:3], extract(Env_sloths, thinned_var_occs[,2:3]), rep(1, nrow(thinned_var_occs))))
+extract_tri = na.omit(cbind(thinned_tri_occs[,2:3], extract(Env_sloths, thinned_tri_occs[,2:3]), rep(1, nrow(thinned_tri_occs))))
+extract_tor = na.omit(cbind(thinned_tor_occs[,2:3], extract(Env_sloths, thinned_tor_occs[,2:3]), rep(1, nrow(thinned_tor_occs))))
 
 colnames(extract_var)[ncol(extract_var)] = 'occ'
 colnames(extract_tri)[ncol(extract_tri)] = 'occ'
+colnames(extract_tor)[ncol(extract_tor)] = 'occ'
 
 extbg_var = na.omit(cbind(bg_var, extract(Env_sloths, bg_var), rep(0, nrow(bg_var))))
 extbg_tri = na.omit(cbind(bg_tri, extract(Env_sloths, bg_tri), rep(0, nrow(bg_tri))))
+extbg_tor = na.omit(cbind(bg_tor, extract(Env_sloths, bg_tor), rep(0, nrow(bg_tor))))
 
 colnames(extbg_var)[ncol(extbg_var)] = 'occ'
 colnames(extbg_tri)[ncol(extbg_tri)] = 'occ'
+colnames(extbg_tor)[ncol(extbg_tor)] = 'occ'
 
 #merge occ and bg data 
 dat_var = rbind(extract_var, extbg_var)
 dat_tri = rbind(extract_tri, extbg_tri)
+dat_tor = rbind(extract_tor, extbg_tor)
 
 #run pca
 pca.env_sloth <- dudi.pca(
-  rbind(dat_var, dat_tri)[,3:21],
+  rbind(dat_var, dat_tri, dat_tor)[,3:21],
   scannf=FALSE,
   nf=2
 )
@@ -125,14 +135,19 @@ scores.var <- suprow(pca.env_sloth,
                      extract_var[which(extract_var[,22]==1),3:21])$li # PCA scores for the species 1 distribution
 
 scores.tri <- suprow(pca.env_sloth,
-                     extract_tri[which(extract_tri[,22]==1),3:21])$li # PCA scores for the species 1 distribution
+                     extract_tri[which(extract_tri[,22]==1),3:21])$li # PCA scores for the species 2 distribution
+
+scores.tor <- suprow(pca.env_sloth,
+                     extract_tor[which(extract_tor[,22]==1),3:21])$li # PCA scores for the species 3 distribution
 
 scores.clim_var <- suprow(pca.env_sloth,dat_var[,3:21])$li # PCA scores for the whole native study area
 
 scores.clim_tri <- suprow(pca.env_sloth,dat_tri[,3:21])$li # PCA scores for the whole native study area
 
+scores.clim_tor <- suprow(pca.env_sloth,dat_tor[,3:21])$li # PCA scores for the whole native study area
+
+
 #ecospat.grid.clim.dyn creates a grid with occurrence densities along one or two environmental gradients
-#think this is the Broennimann method?
 grid.clim_var <- ecospat.grid.clim.dyn(
   glob = scores.globclim,
   glob1 = scores.clim_var,
@@ -149,10 +164,23 @@ grid.clim_tri <- ecospat.grid.clim.dyn(
   th.sp = 0
 )
 
-#Calculate Schoener's overlap metric
-D.overlap <- ecospat.niche.overlap (grid.clim_var, grid.clim_tri, cor=T)$D 
-D.overlap
+grid.clim_tor <- ecospat.grid.clim.dyn(
+  glob = scores.globclim,
+  glob1 = scores.clim_tor,
+  sp = scores.tor,
+  R = 100,
+  th.sp = 0
+)
 
+#Calculate Schoener's overlap metric
+var_tri_D.overlap <- ecospat.niche.overlap (grid.clim_var, grid.clim_tri, cor=T)$D 
+var_tri_D.overlap
+
+var_tor_D.overlap <- ecospat.niche.overlap (grid.clim_var, grid.clim_tor, cor=T)$D 
+var_tor_D.overlap
+
+tri_tor_D.overlap <- ecospat.niche.overlap (grid.clim_tri, grid.clim_tor, cor=T)$D 
+tri_tor_D.overlap
 
 # Niche equivalency test --------------------------------------------------
 
