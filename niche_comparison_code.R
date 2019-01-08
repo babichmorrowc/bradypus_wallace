@@ -190,9 +190,17 @@ tri_tor_D.overlap
 #alternative = "lower" => testing for niche divergence
 #Running only lower
 
-eq.test.lower <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
+var_tri_eq.test.lower <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tri,
                                                 rep=1000, alternative = "lower") ##rep = 1000 recommended for operational runs
-ecospat.plot.overlap.test(eq.test.lower, "D", "Equivalency")
+ecospat.plot.overlap.test(var_tri_eq.test.lower, "D", "Variegatus vs. Tridactylus Equivalency")
+
+var_tor_eq.test.lower <- ecospat.niche.equivalency.test(grid.clim_var, grid.clim_tor,
+                                                        rep=1000, alternative = "lower") ##rep = 1000 recommended for operational runs
+ecospat.plot.overlap.test(var_tor_eq.test.lower, "D", "Variegatus vs. Torquatus Equivalency")
+
+tri_tor_eq.test.lower <- ecospat.niche.equivalency.test(grid.clim_tri, grid.clim_tor,
+                                                        rep=1000, alternative = "lower") ##rep = 1000 recommended for operational runs
+ecospat.plot.overlap.test(tri_tor_eq.test.lower, "D", "Tridactylus vs. Torquatus Equivalency")
 
 #Warren method
 
@@ -219,16 +227,40 @@ plot(nicheEquivalency)
 #Broennimann method
 
 #compares empirical overlap to overlap between variegatus and random niches in range of tridactylus
-sim.test.greater1 <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
+var_tri_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
                                                    rep=1000, alternative = "greater",
                                                    rand.type=2)
-ecospat.plot.overlap.test(sim.test.greater1, "D", "Similarity")
+ecospat.plot.overlap.test(var_tri_sim.test.greater, "D", "Similarity")
 
 #compares empirical overlap to overlap between tridactylus and random niches in range of variegatus
-sim.test.greater2 <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_var,
+tri_var_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_var,
                                                    rep=1000, alternative = "greater",
                                                    rand.type=2)
-ecospat.plot.overlap.test(sim.test.greater2, "D", "Similarity")
+ecospat.plot.overlap.test(tri_var_sim.test.greater, "D", "Similarity")
+
+#compares empirical overlap to overlap between variegatus and random niches in range of torquatus
+var_tor_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tor,
+                                                          rep=1000, alternative = "greater",
+                                                          rand.type=2)
+ecospat.plot.overlap.test(var_tor_sim.test.greater, "D", "Similarity")
+
+#compares empirical overlap to overlap between torquatus and random niches in range of variegatus
+tor_var_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_tor, grid.clim_var,
+                                                          rep=1000, alternative = "greater",
+                                                          rand.type=2)
+ecospat.plot.overlap.test(tor_var_sim.test.greater, "D", "Similarity")
+
+#compares empirical overlap to overlap between torquatus and random niches in range of tridactylus
+tor_tri_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_tor, grid.clim_tri,
+                                                          rep=1000, alternative = "greater",
+                                                          rand.type=2)
+ecospat.plot.overlap.test(tor_tri_sim.test.greater, "D", "Similarity")
+
+#compares empirical overlap to overlap between tridactylus and random niches in range of torquatus
+tri_tor_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_tor,
+                                                          rep=1000, alternative = "greater",
+                                                          rand.type=2)
+ecospat.plot.overlap.test(tri_tor_sim.test.greater, "D", "Similarity")
 
 #Warren method
 
