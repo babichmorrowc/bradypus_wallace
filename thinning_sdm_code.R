@@ -278,7 +278,7 @@ thinned_var_proj_4 <- ENMeval::maxnet.predictRaster(thinned_var_mod_4, Env_sloth
 plot(thinned_var_proj_4)
 
 #save cloglog prediction
-writeRaster(thinned_var_proj_4, "thinned_variegatus_L_5_cloglog.tif")
+writeRaster(thinned_var_proj_4, "thinned_variegatus_L_1_cloglog.tif")
 
 
 # Bradypus tridactylus
@@ -316,7 +316,7 @@ thinned_tri_proj <- ENMeval::maxnet.predictRaster(thinned_tri_mod, Env_sloths, t
 plot(thinned_tri_proj)
 
 #save cloglog prediction
-writeRaster(thinned_tri_proj, "thinned_tridactylus_L_5_cloglog.tif")
+writeRaster(thinned_tri_proj, "thinned_tridactylus_H_3_cloglog.tif")
 
 #evaluation table for tridactylus with spatial thinning and bias file:
 thinned_tri_evalMods_newrms <- thinned_tri_e_newrms@models
@@ -363,7 +363,8 @@ plot(thinned_tri_proj_4_H5)
 plot(thinned_tri_proj_4_LQH5)
 
 #save cloglog prediction
-#writeRaster(thinned_tri_proj_4, "thinned_tridactylus_H_5_cloglog.tif")
+writeRaster(thinned_tri_proj_4_H5, "thinned_tridactylus_H_5_cloglog.tif")
+writeRaster(thinned_tri_proj_4_LQH5, "thinned_tridactylus_LQH_5_cloglog.tif")
 
 # iterate model building over all chosen parameter settings
 thinned_tri_e_6 <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk_6, bg.coords = buffer_tri_bg.xy_6, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
@@ -445,7 +446,7 @@ thinned_tor_proj_4 <- ENMeval::maxnet.predictRaster(thinned_tor_mod_4, Env_sloth
 plot(thinned_tor_proj_4)
 
 #save cloglog prediction
-writeRaster(thinned_tor_proj_4, "thinned_torquatus_L_2_cloglog.tif")
+writeRaster(thinned_tor_proj_4, "thinned_torquatus_H_3_cloglog.tif")
 
 
 # Response curves ---------------------------------------------------------
