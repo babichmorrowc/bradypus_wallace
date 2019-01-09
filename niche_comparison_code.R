@@ -146,6 +146,13 @@ scores.clim_tri <- suprow(pca.env_sloth,dat_tri[,3:21])$li # PCA scores for the 
 
 scores.clim_tor <- suprow(pca.env_sloth,dat_tor[,3:21])$li # PCA scores for the whole native study area
 
+plot(scores.clim_var, col = alpha("#01234C", 0.05))
+points(scores.clim_tri, col = alpha("#81689E", 0.05))
+points(scores.clim_tor, col = alpha("#91C16C", 0.05))
+points(scores.var, pch = 21, col = "black", bg = "#01234C")
+points(scores.tri, pch = 21, col = "black", bg = "#81689E")
+points(scores.tor, pch = 21, col = "black", bg = "#91C16C")
+
 
 #ecospat.grid.clim.dyn creates a grid with occurrence densities along one or two environmental gradients
 grid.clim_var <- ecospat.grid.clim.dyn(
