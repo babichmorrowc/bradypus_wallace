@@ -277,6 +277,7 @@ thinned_var_proj_4 <- ENMeval::maxnet.predictRaster(thinned_var_mod_4, Env_sloth
 #plot the model prediction
 plot(thinned_var_proj_4)
 
+
 #save cloglog prediction
 writeRaster(thinned_var_proj_4, "thinned_variegatus_L_1_cloglog.tif")
 
@@ -349,22 +350,33 @@ thinned_tri_evalPreds_4 <- thinned_tri_e_4@predictions
 # Select your model from the models list
 thinned_tri_mod_4_H5 <- thinned_tri_evalMods_4[["H_5"]]
 thinned_tri_mod_4_LQH5 <- thinned_tri_evalMods_4[["LQH_5"]]
+thinned_tri_mod_4_LQ2 <- thinned_tri_evalMods_4[["LQ_2"]]
+thinned_tri_mod_4_LQ1 <- thinned_tri_evalMods_4[["LQ_1"]]
 # generate cloglog prediction
 thinned_tri_pred_4_H5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_H5, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
 thinned_tri_pred_4_LQH5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQH5, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
+thinned_tri_pred_4_LQ2 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ2, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
+thinned_tri_pred_4_LQ1 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ1, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
 plot(thinned_tri_pred_4_H5)
 plot(thinned_tri_pred_4_LQH5)
+plot(thinned_tri_pred_4_LQ2)
+plot(thinned_tri_pred_4_LQ1)
 #project to entire extent
 thinned_tri_proj_4_H5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_H5, Env_sloths, type = 'cloglog', clamp = TRUE)
 thinned_tri_proj_4_LQH5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQH5, Env_sloths, type = 'cloglog', clamp = TRUE)
+thinned_tri_proj_4_LQ2 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ2, Env_sloths, type = 'cloglog', clamp = TRUE)
+thinned_tri_proj_4_LQ1 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ1, Env_sloths, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
 plot(thinned_tri_proj_4_H5)
 plot(thinned_tri_proj_4_LQH5)
+plot(thinned_tri_proj_4_LQ2)
+plot(thinned_tri_proj_4_LQ1)
 
 #save cloglog prediction
 writeRaster(thinned_tri_proj_4_H5, "thinned_tridactylus_H_5_cloglog.tif")
 writeRaster(thinned_tri_proj_4_LQH5, "thinned_tridactylus_LQH_5_cloglog.tif")
+writeRaster(thinned_tri_proj_4_LQ2, "thinned_tridactylus_LQ_2_cloglog.tif")
 
 # iterate model building over all chosen parameter settings
 thinned_tri_e_6 <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk_6, bg.coords = buffer_tri_bg.xy_6, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
