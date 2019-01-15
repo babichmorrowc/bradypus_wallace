@@ -133,25 +133,6 @@ ggmap(map) +
   geom_polygon(data = tri_bgExt_4, aes(x = long, y = lat, group = group), fill = "deepskyblue", alpha = 0.7) +
   geom_polygon(data = tor_bgExt_4, aes(x = long, y = lat, group = group), fill = "mediumorchid2", alpha = 0.7)
 
-
-# crop the environmental rasters by the background extent shape
-var_envsBgCrop <- raster::crop(Env_sloths, var_bgExt_2)
-tri_envsBgCrop <- raster::crop(Env_sloths, tri_bgExt_2)
-tor_envsBgCrop <- raster::crop(Env_sloths, tor_bgExt_2)
-# mask the background extent shape from the cropped raster
-var_envsBgMsk <- raster::mask(var_envsBgCrop, var_bgExt_2)
-tri_envsBgMsk <- raster::mask(tri_envsBgCrop, tri_bgExt_2)
-tor_envsBgMsk <- raster::mask(tor_envsBgCrop, tor_bgExt_2)
-# sample random background points
-buffer_var_bg.xy <- dismo::randomPoints(var_envsBgMsk, 10000)
-buffer_tri_bg.xy <- dismo::randomPoints(tri_envsBgMsk, 10000)
-buffer_tor_bg.xy <- dismo::randomPoints(tor_envsBgMsk, 10000)
-# convert matrix output to data frame
-buffer_var_bg.xy <- as.data.frame(buffer_var_bg.xy)
-buffer_tri_bg.xy <- as.data.frame(buffer_tri_bg.xy)
-buffer_tor_bg.xy <- as.data.frame(buffer_tor_bg.xy)
-
-
 # crop the environmental rasters by the background extent shape
 var_envsBgCrop_4 <- raster::crop(Env_sloths, var_bgExt_4)
 tri_envsBgCrop_4 <- raster::crop(Env_sloths, tri_bgExt_4)

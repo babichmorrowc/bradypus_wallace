@@ -30,6 +30,11 @@ names(variegatus)[1] <- "species"
 names(tridactylus)[1] <- "species"
 names(torquatus)[1] <- "species"
 
+# Do the same for the thinned occurrences
+thinned_var_occs[1] <- as.factor('variegatus')
+thinned_tri_occs[1] <- as.factor('tridactylus')
+thinned_tor_occs[1] <- as.factor('torquatus')
+
 #get extent
 combine.lat <- c(variegatus$latitude, tridactylus$latitude, torquatus$latitude)
 combine.lon <- c(variegatus$longitude, tridactylus$longitude, torquatus$longitude)
@@ -40,6 +45,25 @@ grids = list.files("/Users/hellenfellows/Desktop/bio_2-5m_bil", pattern = "*.bil
 sta = stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids))
 Env_sloths = crop(sta, ext_sloths)
 
+#create buffered environmental background
+
+#Buffer by 4 degree around points
+var_bgExt_4 <- rgeos::gBuffer(thinned_var_occs.xy, width = 4)
+tri_bgExt_4 <- rgeos::gBuffer(thinned_tri_occs.xy, width = 4)
+tor_bgExt_4 <- rgeos::gBuffer(thinned_tor_occs.xy, width = 4)
+# crop the environmental rasters by the background extent shape
+var_envsBgCrop_4 <- raster::crop(Env_sloths, var_bgExt_4)
+tri_envsBgCrop_4 <- raster::crop(Env_sloths, tri_bgExt_4)
+tor_envsBgCrop_4 <- raster::crop(Env_sloths, tor_bgExt_4)
+# mask the background extent shape from the cropped raster
+var_envsBgMsk_4 <- raster::mask(var_envsBgCrop_4, var_bgExt_4)
+tri_envsBgMsk_4 <- raster::mask(tri_envsBgCrop_4, tri_bgExt_4)
+tor_envsBgMsk_4 <- raster::mask(tor_envsBgCrop_4, tor_bgExt_4)
+
+#merge pairwise combinations of species
+merge_var_tri <- merge(var_envsBgMsk_4, tri_envsBgMsk_4)
+merge_var_tor <- merge(var_envsBgMsk_4, tor_envsBgMsk_4)
+merge_tri_tor <- merge(tri_envsBgMsk_4, tor_envsBgMsk_4)
 
 # Get Maxent rasters ------------------------------------------------------
 
@@ -211,22 +235,59 @@ ecospat.plot.overlap.test(tri_tor_eq.test.lower, "D", "Tridactylus vs. Torquatus
 
 #Warren method
 
+#variegatus vs. tridactylus
+
 # row bind the occurrence data so all occurrences are in 3 rows of Species, X, Y
-sites<-rbind(variegatus[,1:3], tridactylus[,1:3])
-View(sites)
+vartri_sites<-rbind(thinned_var_occs[,1:3], thinned_tri_occs[,1:3])
+View(vartri_sites)
 species <- c('variegatus','tridactylus')
 
 # Change the column names of sites
-colnames(sites)<-c("species","longitude","latitude")
-samples <- sites[grep(paste(species, collapse = "|"), sites$species), ] # don't think I need this bit
-samples <- as.data.frame(samples)
+colnames(vartri_sites)<-c("species","longitude","latitude")
+vartri_samples <- vartri_sites[grep(paste(species, collapse = "|"), vartri_sites$species), ] # don't think I need this bit
+vartri_samples <- as.data.frame(vartri_samples)
 
 # Tell R where maxent is (the copy that is with dismo).
 maxent.exe <- paste(system.file(package="dismo"),"/java/maxent.jar", sep = "")
 
 # Perform niche equivalency test using phyloclim
-nicheEquivalency<-niche.equivalency.test(p = samples, env = env, app=maxent.exe, dir = 'NicheEquivalence')
-plot(nicheEquivalency)
+nicheEquivalency_vartri<-niche.equivalency.test(p = vartri_samples, env = merge_var_tri, app=maxent.exe, dir = 'VarTriNicheEquivalence')
+nicheEquivalency_vartri
+plot(nicheEquivalency_vartri)
+
+#variegatus vs. torquatus
+
+# row bind the occurrence data so all occurrences are in 3 rows of Species, X, Y
+vartor_sites<-rbind(thinned_var_occs[,1:3], thinned_tor_occs[,1:3])
+View(vartor_sites)
+species <- c('variegatus','torquatus')
+
+# Change the column names of sites
+colnames(vartor_sites)<-c("species","longitude","latitude")
+vartor_samples <- vartor_sites[grep(paste(species, collapse = "|"), vartor_sites$species), ] # don't think I need this bit
+vartor_samples <- as.data.frame(vartor_samples)
+
+# Perform niche equivalency test using phyloclim
+nicheEquivalency_vartor <- niche.equivalency.test(p = vartor_samples, env = merge_var_tor, app=maxent.exe, dir = 'VarTorNicheEquivalence')
+nicheEquivalency_vartor
+plot(nicheEquivalency_vartor)
+
+#tridactylus vs. torquatus
+
+# row bind the occurrence data so all occurrences are in 3 rows of Species, X, Y
+tritor_sites<-rbind(thinned_tri_occs[,1:3], thinned_tor_occs[,1:3])
+View(tritor_sites)
+species <- c('tridactylus','torquatus')
+
+# Change the column names of sites
+colnames(tritor_sites)<-c("species","longitude","latitude")
+tritor_samples <- tritor_sites[grep(paste(species, collapse = "|"), tritor_sites$species), ] # don't think I need this bit
+tritor_samples <- as.data.frame(tritor_samples)
+
+# Perform niche equivalency test using phyloclim
+nicheEquivalency_tritor <- niche.equivalency.test(p = tritor_samples, env = merge_tri_tor, app=maxent.exe, dir = 'TriTorNicheEquivalence')
+nicheEquivalency_tritor
+plot(nicheEquivalency_tritor)
 
 
 # Niche similarity test ---------------------------------------------------
@@ -271,7 +332,23 @@ ecospat.plot.overlap.test(tri_tor_sim.test.greater, "D", "Similarity")
 
 #Warren method
 
-#Perform niche similarity test using phyloclim
-bg.test <- bg.similarity.test(p = samples, env = env, app = maxent.exe, dir = 'background')
-plot(bg.test)
+# variegatus vs. tridactylus
 
+#Perform niche similarity test using phyloclim
+bg.test_vartri <- bg.similarity.test(p = vartri_samples, env = merge_var_tri, app = maxent.exe, dir = 'VarTriNicheSimilarity')
+bg.test_vartri
+plot(bg.test_vartri)
+
+# variegatus vs. torquatus
+
+#Perform niche similarity test using phyloclim
+bg.test_vartor <- bg.similarity.test(p = vartor_samples, env = merge_var_tor, app = maxent.exe, dir = 'VarTorNicheSimilarity')
+bg.test_vartor
+plot(bg.test_vartor)
+
+# tridactylus vs. torquatus
+
+#Perform niche similarity test using phyloclim
+bg.test_tritor <- bg.similarity.test(p = tritor_samples, env = merge_tri_tor, app = maxent.exe, dir = 'TriTorNicheSimilarity')
+bg.test_tritor
+plot(bg.test_tritor)
