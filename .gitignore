@@ -2,7 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
-NicheEquivalence/
+TriTorNicheEquivalence/
+VarTorNicheEquivalence/
+VarTriNicheEquivalence/
+VarTriNicheSimilarity/
+VarTorNicheSimilarity/
+TriTorNicheSimilarity/
 background/
 .DS_Store
 .RDataTmp
