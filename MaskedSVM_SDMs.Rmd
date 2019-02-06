@@ -1,0 +1,240 @@
+---
+title: "MaskedSVM_SDMs"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages and source functions
+
+```{r}
+library(raster)
+source("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/maskRangeR/R/svm.R")
+```
+
+
+## Load occurrence data and SDMs
+
+I loaded the occurrence data for the three species, with latitude and longitude points coming from literature.
+
+```{r}
+variegatus <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_variegatus_litdata.csv")
+head(variegatus)
+tridactylus <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_tridactylus_litdata.csv")
+head(tridactylus)
+torquatus <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_torquatus_litdata.csv")
+head(torquatus)
+```
+
+I used SDMs built from a 4-degree background buffer around points thinned to 40 km. Models were selected based on the lowest AIC and lowest omission rate.
+
+```{r}
+#load SDMs
+var_sdm <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Wallace_code/thinned_variegatus_L_1_cloglog.tif")
+plot(var_sdm)
+tri_sdm <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Wallace_code/thinned_tridactylus_LQ_2_cloglog.tif")
+plot(tri_sdm)
+tor_sdm <- raster("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Wallace_code/thinned_torquatus_H_3_cloglog.tif")
+plot(tor_sdm)
+```
+
+## Spatial SVMs
+
+The following SVMs are built using only spatial information, i.e. the occurrence localities of the two species.
+
+### Unweighted spatial SVMs
+
+In the unweighted SVM, the occurrences of each species are weighed equally.
+
+```{r, message = FALSE}
+# create SVM
+unweighted_svm_occ <- rangeSVM(variegatus[,2:3], tridactylus[,2:3], torquatus[,2:3], nrep = 100)
+```
+
+```{r}
+# use SVM to create a raster of predicted regions
+sloth_unweighted_svm_occ <- rangeSVM_predict(svm = unweighted_svm_occ, r = var_sdm)
+plot(sloth_unweighted_svm_occ)
+points(variegatus[,2:3], pch = 20, cex = 0.75, col = "black")
+points(tridactylus[,2:3], pch = 20, cex = 0.75, col = "red")
+points(torquatus[,2:3], pch = 20, cex = 0.75, col = "blue")
+```
+
+The grey areas indicate regions predicted for *B. variegatus*, the yellow areas indicate regions predicted for *B. tridactylus*, and the green areas indicate regions predicted for *B. torquatus*. Black points show the occurrences of *B. variegatus*, red show *B. tridactylus*, and blue show *B. torquatus*.
+
+#### *B. variegatus*
+
+```{r}
+# masked SDM predictions for variegatus
+var_unweighted_svm_occ <- sloth_unweighted_svm_occ == 1
+var_unweighted_svm_occ[var_unweighted_svm_occ == 0] <- NA
+var_unweighted_svm_occ_mask <- mask(var_sdm, var_unweighted_svm_occ)
+plot(var_unweighted_svm_occ_mask)
+```
+
+#### *B. tridactylus*
+
+```{r}
+# masked SDM predictions for tridactylus
+tri_unweighted_svm_occ <- sloth_unweighted_svm_occ == 2
+tri_unweighted_svm_occ[tri_unweighted_svm_occ == 0] <- NA
+tri_unweighted_svm_occ_mask <- mask(tri_sdm, tri_unweighted_svm_occ)
+plot(tri_unweighted_svm_occ_mask)
+```
+
+#### *B. torquatus*
+
+```{r}
+# masked SDM predictions for torquatus
+tor_unweighted_svm_occ <- sloth_unweighted_svm_occ == 3
+tor_unweighted_svm_occ[tor_unweighted_svm_occ == 0] <- NA
+tor_unweighted_svm_occ_mask <- mask(tor_sdm, tor_unweighted_svm_occ)
+plot(tor_unweighted_svm_occ_mask)
+```
+
+### Weighted spatial SVMs
+
+For the weighted SVMs, I modified the code in the `svm.R` script of `maskRangeR` so that when `weight = TRUE`, the `e1071::svm()` function uses `class.weights = "inverse"`. According to the `e1071` documentation, this means the weights will be inversely proportional to the class distribution. We still need to discuss if this is the appropriate way to deal with weighting SVMs when there are more than 2 species.
+
+```{r, message = FALSE}
+# create SVM
+weighted_svm_occ <- rangeSVM(variegatus[,2:3], tridactylus[,2:3], torquatus[,2:3], nrep = 100, weight = TRUE)
+```
+
+```{r}
+# use SVM to create a raster of predicted regions
+sloth_weighted_svm_occ <- rangeSVM_predict(svm = weighted_svm_occ, r = var_sdm)
+plot(sloth_weighted_svm_occ)
+points(variegatus[,2:3], pch = 20, cex = 0.75, col = "black")
+points(tridactylus[,2:3], pch = 20, cex = 0.75, col = "red")
+points(torquatus[,2:3], pch = 20, cex = 0.75, col = "blue")
+```
+
+#### *B. variegatus*
+
+```{r}
+# masked SDM predictions for variegatus
+var_weighted_svm_occ <- sloth_weighted_svm_occ == 1
+var_weighted_svm_occ[var_weighted_svm_occ == 0] <- NA
+var_weighted_svm_occ_mask <- mask(var_sdm, var_weighted_svm_occ)
+plot(var_weighted_svm_occ_mask)
+```
+
+#### *B. tridactylus*
+
+```{r}
+# masked SDM predictions for tridactylus
+tri_weighted_svm_occ <- sloth_weighted_svm_occ == 2
+tri_weighted_svm_occ[tri_weighted_svm_occ == 0] <- NA
+tri_weighted_svm_occ_mask <- mask(tri_sdm, tri_weighted_svm_occ)
+plot(tri_weighted_svm_occ_mask)
+```
+
+#### *B. torquatus*
+
+```{r}
+# masked SDM predictions for torquatus
+tor_weighted_svm_occ <- sloth_weighted_svm_occ == 3
+tor_weighted_svm_occ[tor_weighted_svm_occ == 0] <- NA
+tor_weighted_svm_occ_mask <- mask(tor_sdm, tor_weighted_svm_occ)
+plot(tor_weighted_svm_occ_mask)
+```
+
+## Hybrid SVMs
+
+The hybrid SVMs are created using the habitat suitability predicted by the species distribution models in addition to spatial information, i.e. occurrences of the species.
+
+### Unweighted hybrid SVMs
+
+```{r, message = FALSE}
+# create SVM
+unweighted_svm_hyb <- rangeSVM(variegatus[,2:3], tridactylus[,2:3], torquatus[,2:3], sdm = raster::stack(var_sdm, tri_sdm, tor_sdm), nrep = 100)
+```
+
+```{r}
+sloth_unweighted_svm_hyb <- rangeSVM_predict(svm = unweighted_svm_hyb, r = var_sdm, sdm = raster::stack(var_sdm, tri_sdm, tor_sdm))
+plot(sloth_unweighted_svm_hyb)
+points(variegatus[,2:3], pch = 20, cex = 0.75, col = "black")
+points(tridactylus[,2:3], pch = 20, cex = 0.75, col = "red")
+points(torquatus[,2:3], pch = 20, cex = 0.75, col = "blue")
+```
+
+#### *B. variegatus*
+
+```{r}
+# masked SDM predictions for variegatus
+var_unweighted_svm_hyb <- sloth_unweighted_svm_hyb == 1
+var_unweighted_svm_hyb[var_unweighted_svm_hyb == 0] <- NA
+var_unweighted_svm_hyb_mask <- mask(var_sdm, var_unweighted_svm_hyb)
+plot(var_unweighted_svm_hyb_mask)
+```
+
+#### *B. tridactylus*
+
+```{r}
+# masked SDM predictions for tridactylus
+tri_unweighted_svm_hyb <- sloth_unweighted_svm_hyb == 2
+tri_unweighted_svm_hyb[tri_unweighted_svm_hyb == 0] <- NA
+tri_unweighted_svm_hyb_mask <- mask(tri_sdm, tri_unweighted_svm_hyb)
+plot(tri_unweighted_svm_hyb_mask)
+```
+
+#### *B. torquatus*
+
+```{r}
+# masked SDM predictions for torquatus
+tor_unweighted_svm_hyb <- sloth_unweighted_svm_hyb == 3
+tor_unweighted_svm_hyb[tor_unweighted_svm_hyb == 0] <- NA
+tor_unweighted_svm_hyb_mask <- mask(tor_sdm, tor_unweighted_svm_hyb)
+plot(tor_unweighted_svm_hyb_mask)
+```
+
+### Weighted hybrid SVMs
+
+```{r, message = FALSE}
+# create SVM
+weighted_svm_hyb <- rangeSVM(variegatus[,2:3], tridactylus[,2:3], torquatus[,2:3], sdm = raster::stack(var_sdm, tri_sdm, tor_sdm), nrep = 100, weight = TRUE)
+```
+
+```{r}
+sloth_weighted_svm_hyb <- rangeSVM_predict(svm = weighted_svm_hyb, r = var_sdm, sdm = raster::stack(var_sdm, tri_sdm, tor_sdm))
+plot(sloth_weighted_svm_hyb)
+points(variegatus[,2:3], pch = 20, cex = 0.75, col = "black")
+points(tridactylus[,2:3], pch = 20, cex = 0.75, col = "red")
+points(torquatus[,2:3], pch = 20, cex = 0.75, col = "blue")
+```
+
+#### *B. variegatus*
+
+```{r}
+# masked SDM predictions for variegatus
+var_weighted_svm_hyb <- sloth_weighted_svm_hyb == 1
+var_weighted_svm_hyb[var_weighted_svm_hyb == 0] <- NA
+var_weighted_svm_hyb_mask <- mask(var_sdm, var_weighted_svm_hyb)
+plot(var_weighted_svm_hyb_mask)
+```
+
+#### *B. tridactylus*
+
+```{r}
+# masked SDM predictions for tridactylus
+tri_weighted_svm_hyb <- sloth_weighted_svm_hyb == 2
+tri_weighted_svm_hyb[tri_weighted_svm_hyb == 0] <- NA
+tri_weighted_svm_hyb_mask <- mask(tri_sdm, tri_weighted_svm_hyb)
+plot(tri_weighted_svm_hyb_mask)
+```
+
+#### *B. torquatus*
+
+```{r}
+# masked SDM predictions for torquatus
+tor_weighted_svm_hyb <- sloth_weighted_svm_hyb == 3
+tor_weighted_svm_hyb[tor_weighted_svm_hyb == 0] <- NA
+tor_weighted_svm_hyb_mask <- mask(tor_sdm, tor_weighted_svm_hyb)
+plot(tor_weighted_svm_hyb_mask)
+```
+
+
+
