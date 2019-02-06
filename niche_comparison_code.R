@@ -298,37 +298,37 @@ plot(nicheEquivalency_tritor)
 var_tri_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tri,
                                                    rep=1000, alternative = "greater",
                                                    rand.type=2)
-ecospat.plot.overlap.test(var_tri_sim.test.greater, "D", "Similarity")
+ecospat.plot.overlap.test(var_tri_sim.test.greater, "D", "Variegatus vs. tridactylus bg Similarity")
 
 #compares empirical overlap to overlap between tridactylus and random niches in range of variegatus
 tri_var_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_var,
                                                    rep=1000, alternative = "greater",
                                                    rand.type=2)
-ecospat.plot.overlap.test(tri_var_sim.test.greater, "D", "Similarity")
+ecospat.plot.overlap.test(tri_var_sim.test.greater, "D", "Tridactylus vs. variegatus bg Similarity")
 
 #compares empirical overlap to overlap between variegatus and random niches in range of torquatus
 var_tor_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_var, grid.clim_tor,
                                                           rep=1000, alternative = "greater",
                                                           rand.type=2)
-ecospat.plot.overlap.test(var_tor_sim.test.greater, "D", "Similarity")
+ecospat.plot.overlap.test(var_tor_sim.test.greater, "D", "Variegatus vs. torquatus bg Similarity")
 
 #compares empirical overlap to overlap between torquatus and random niches in range of variegatus
 tor_var_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_tor, grid.clim_var,
                                                           rep=1000, alternative = "greater",
                                                           rand.type=2)
-ecospat.plot.overlap.test(tor_var_sim.test.greater, "D", "Similarity")
+ecospat.plot.overlap.test(tor_var_sim.test.greater, "D", "Torquatus vs. variegatus bg Similarity")
 
 #compares empirical overlap to overlap between torquatus and random niches in range of tridactylus
 tor_tri_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_tor, grid.clim_tri,
                                                           rep=1000, alternative = "greater",
                                                           rand.type=2)
-ecospat.plot.overlap.test(tor_tri_sim.test.greater, "D", "Similarity")
+ecospat.plot.overlap.test(tor_tri_sim.test.greater, "D", "Torquatus vs. tridactylus bg Similarity")
 
 #compares empirical overlap to overlap between tridactylus and random niches in range of torquatus
 tri_tor_sim.test.greater <- ecospat.niche.similarity.test(grid.clim_tri, grid.clim_tor,
                                                           rep=1000, alternative = "greater",
                                                           rand.type=2)
-ecospat.plot.overlap.test(tri_tor_sim.test.greater, "D", "Similarity")
+ecospat.plot.overlap.test(tri_tor_sim.test.greater, "D", "Tridactylus vs. torquatus bg Similarity")
 
 #Warren method
 
