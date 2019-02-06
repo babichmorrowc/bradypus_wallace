@@ -7,6 +7,7 @@ library(ENMeval)
 library(dplyr)
 library(ggmap)
 library(readr)
+library(sp)
 
 # Import occurrence data --------------------------------------------------
 
@@ -36,6 +37,15 @@ var_occs$occID <- row.names(var_occs)
 tri_occs$occID <- row.names(tri_occs)
 tor_occs$occID <- row.names(tor_occs)
 
+
+# Create bounding boxes ---------------------------------------------------
+
+#get extent
+ext_var <- extent(c(min(var_occs$longitude)-2, max(var_occs$longitude)+2, min(var_occs$latitude)-2, max(var_occs$latitude)+2))
+ext_tri <- extent(c(min(tri_occs$longitude)-2, max(tri_occs$longitude)+2, min(tri_occs$latitude)-2, max(tri_occs$latitude)+2))
+ext_tor <- extent(c(min(tor_occs$longitude)-2, max(tor_occs$longitude)+2, min(tor_occs$latitude)-2, max(tor_occs$latitude)+2))
+
+
 # Mapping -----------------------------------------------------------------
 
 #Use Google maps
@@ -43,7 +53,7 @@ api_key =
 register_google(key = api_key)
 
 #Satellite map
-bbox <- make_bbox(lon = var_occs$longitude, lat = var_occs$latitude, f = 0.2)
+bbox <- make_bbox(lon = var_occs$longitude, lat = var_occs$latitude, f = 0.05)
 map <- get_map(location = bbox, source = "google", maptype = "hybrid")
 ggmap(map)
 ggmap(map) +
@@ -98,8 +108,11 @@ envs <- stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids))
 #get extent
 combine.lat <- c(var_occs$latitude, tri_occs$latitude, tor_occs$latitude)
 combine.lon <- c(var_occs$longitude, tri_occs$longitude, tor_occs$longitude)
-ext_sloths <- extent(c(min(combine.lon)-5, max(combine.lon)+5, min(combine.lat)-5, max(combine.lat)+5))
+ext_sloths <- extent(c(min(combine.lon)-2, max(combine.lon)+2, min(combine.lat)-2, max(combine.lat)+2))
 Env_sloths <- crop(envs, ext_sloths)
+Env_var <- crop(envs, ext_var)
+Env_tri <- crop(envs, ext_tri)
+Env_tor <- crop(envs, ext_tor)
 
 # extract environmental values at occ grid cells
 thinned_var_locs.vals <- raster::extract(envs[[1]], thinned_var_occs[, c('longitude', 'latitude')])
@@ -217,12 +230,16 @@ thinned_var_pred_4 <- ENMeval::maxnet.predictRaster(thinned_var_mod_4, var_envsB
 plot(thinned_var_pred_4)
 #project to entire extent
 thinned_var_proj_4 <- ENMeval::maxnet.predictRaster(thinned_var_mod_4, Env_sloths, type = 'cloglog', clamp = TRUE)
+#project to variegatus extent
+thinned_var_proj_bbox <- ENMeval::maxnet.predictRaster(thinned_var_mod_4, Env_var, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
 plot(thinned_var_proj_4)
+plot(thinned_var_proj_bbox)
 
 
 #save cloglog prediction
 writeRaster(thinned_var_proj_4, "thinned_variegatus_L_1_cloglog.tif")
+writeRaster(thinned_var_proj_bbox, "thinned_variegatus_bbox.tif")
 
 
 # Bradypus tridactylus
@@ -239,35 +256,25 @@ thinned_tri_evalMods_4 <- thinned_tri_e_4@models
 names(thinned_tri_evalMods_4) <- thinned_tri_e_4@results$settings
 thinned_tri_evalPreds_4 <- thinned_tri_e_4@predictions
 # Select your model from the models list
-thinned_tri_mod_4_H5 <- thinned_tri_evalMods_4[["H_5"]]
-thinned_tri_mod_4_LQH5 <- thinned_tri_evalMods_4[["LQH_5"]]
 thinned_tri_mod_4_LQ2 <- thinned_tri_evalMods_4[["LQ_2"]]
-thinned_tri_mod_4_LQ1 <- thinned_tri_evalMods_4[["LQ_1"]]
 # generate cloglog prediction
-thinned_tri_pred_4_H5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_H5, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
-thinned_tri_pred_4_LQH5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQH5, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
 thinned_tri_pred_4_LQ2 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ2, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
-thinned_tri_pred_4_LQ1 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ1, tri_envsBgMsk_4, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
 plot(thinned_tri_pred_4_H5)
 plot(thinned_tri_pred_4_LQH5)
 plot(thinned_tri_pred_4_LQ2)
 plot(thinned_tri_pred_4_LQ1)
 #project to entire extent
-thinned_tri_proj_4_H5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_H5, Env_sloths, type = 'cloglog', clamp = TRUE)
-thinned_tri_proj_4_LQH5 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQH5, Env_sloths, type = 'cloglog', clamp = TRUE)
 thinned_tri_proj_4_LQ2 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ2, Env_sloths, type = 'cloglog', clamp = TRUE)
-thinned_tri_proj_4_LQ1 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ1, Env_sloths, type = 'cloglog', clamp = TRUE)
+#project to tridactylus extent
+thinned_tri_proj_bbox <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQ2, Env_tri, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
-plot(thinned_tri_proj_4_H5)
-plot(thinned_tri_proj_4_LQH5)
 plot(thinned_tri_proj_4_LQ2)
-plot(thinned_tri_proj_4_LQ1)
+plot(thinned_tri_proj_bbox)
 
 #save cloglog prediction
-writeRaster(thinned_tri_proj_4_H5, "thinned_tridactylus_H_5_cloglog.tif")
-writeRaster(thinned_tri_proj_4_LQH5, "thinned_tridactylus_LQH_5_cloglog.tif")
 writeRaster(thinned_tri_proj_4_LQ2, "thinned_tridactylus_LQ_2_cloglog.tif")
+writeRaster(thinned_tri_proj_bbox, "thinned_tridactylus_bbox.tif")
 
 
 # Bradypus torquatus
@@ -291,12 +298,15 @@ thinned_tor_pred_4 <- ENMeval::maxnet.predictRaster(thinned_tor_mod_4, tor_envsB
 plot(thinned_tor_pred_4)
 #project to entire extent
 thinned_tor_proj_4 <- ENMeval::maxnet.predictRaster(thinned_tor_mod_4, Env_sloths, type = 'cloglog', clamp = TRUE)
+#project to torquatus extent
+thinned_tor_proj_bbox <- ENMeval::maxnet.predictRaster(thinned_tor_mod_4, Env_tor, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
 plot(thinned_tor_proj_4)
+plot(thinned_tor_proj_bbox)
 
 #save cloglog prediction
 writeRaster(thinned_tor_proj_4, "thinned_torquatus_H_3_cloglog.tif")
-
+writeRaster(thinned_tor_proj_bbox, "thinned_torquatus_bbox.tif")
 
 # Response curves ---------------------------------------------------------
 
