@@ -319,3 +319,41 @@ plot(thinned_tri_mod, vars = c('bio16', 'bio4', 'bio6'))
 thinned_tor_mod$betas
 plot(thinned_tor_mod, vars = c('bio12', 'bio2', 'bio3'))
 
+
+# Threshold models --------------------------------------------------------
+
+# extract model prediction values at occurrence points
+var_occPredVals <- raster::extract(thinned_var_proj_4, thinned_var_occs[,2:3])
+
+# find threshold for MTP
+var_thresh_mtp <- min(var_occPredVals)
+p10 <- ceiling(length(var_occPredVals) * 0.9)
+var_thresh_p10 <- rev(sort(var_occPredVals))[p10]
+
+# create thresholded raster
+thinned_var_proj_thresh_mtp <- thinned_var_proj_4
+thinned_var_proj_thresh_mtp[thinned_var_proj_thresh_mtp < var_thresh_mtp] <- NA
+plot(thinned_var_proj_thresh_mtp)
+thinned_var_proj_thresh_p10 <- thinned_var_proj_4
+thinned_var_proj_thresh_p10[thinned_var_proj_thresh_p10 < var_thresh_p10] <- NA
+plot(thinned_var_proj_thresh_p10)
+
+# function from Wallace to apply threshold (either MTP or )
+thresh <- function(modOccVals, type) {
+  # remove all NA
+  modOccVals <- na.omit(modOccVals)
+  if (type == 'mtp') {
+    # apply minimum training presence threshold
+    x <- min(modOccVals)
+  } else if (type == 'p10') {
+    # Define 10% training presence threshold
+    if (length(modOccVals) < 10) {  # if less than 10 occ values, find 90% of total and round down
+      n90 <- floor(length(modOccVals) * 0.9)
+    } else {  # if greater than or equal to 10 occ values, round up
+      n90 <- ceiling(length(modOccVals) * 0.9)
+    }
+    x <- rev(sort(modOccVals))[n90]  # apply 10% training presence threshold over all models
+  }
+  return(x)
+}
+
