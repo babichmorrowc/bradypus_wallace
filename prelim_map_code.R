@@ -4,9 +4,12 @@ library(ggmap)
 library(maps)
 library(mapdata)
 
-#read in occurrences compiled from literature for B. variegatus and B. tridactylus
-Bradypus_variegatus_litdata <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_variegatus_litdata.csv")
-Bradypus_tridactylus_litdata <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_tridactylus_litdata.csv")
+#read in occurrences compiled from literature
+variegatus <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_variegatus_litdata.csv")
+head(variegatus)
+tridactylus <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_tridactylus_litdata.csv")
+head(tridactylus)
+torquatus <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Bradypus_torquatus_litdata.csv")
 
 #making geographic region a factor
 Bradypus_variegatus_litdata$geographic_region <- as.factor(Bradypus_variegatus_litdata$geographic_region)
@@ -85,12 +88,13 @@ api_key = "AIzaSyBK7lLbqoqnYFdzf-idYYposb-1gwyRAlQ"
 register_google(key = api_key)
 
 #Satellite map
-bbox <- make_bbox(lon = Bradypus_variegatus_litdata$longitude, lat = Bradypus_variegatus_litdata$latitude, f = 0.2)
+bbox <- make_bbox(lon = variegatus$longitude, lat = variegatus$latitude, f = 0.2)
 map <- get_map(location = bbox, source = "google", maptype = "satellite")
 ggmap(map)
 ggmap(map) +
-  geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude), color = "darkorange1") +
-  geom_point(data = Bradypus_tridactylus_litdata, aes(x = longitude, y = latitude), color = "deepskyblue")
+  geom_point(data = variegatus, aes(x=longitude, y=latitude), color = "darkorange2") +
+  geom_point(data = tridactylus, aes(x = longitude, y = latitude), color = "firebrick3") +
+  geom_point(data = torquatus, aes(x = longitude, y = latitude), color = "deepskyblue")
 
 #Zoomed in map
 bbox2 <- make_bbox(lon = c(-65, -45), lat = c(-5,0), f = 0.1)
@@ -108,4 +112,11 @@ ggmap(map3) +
   geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude), color = "darkgreen") +
   geom_point(data = Bradypus_tridactylus_litdata, aes(x = longitude, y = latitude), color = "blue")
 
+#Zoomed in to 
+bbox4 <- make_bbox(lon = c(-50, -43), lat = c(-25,-23), f = 0)
+map4 <- get_map(location = bbox4, source = "google", maptype = "roadmap")
+ggmap(map4)
+ggmap(map4) +
+  geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude), color = "darkgreen") +
+  geom_point(data = Bradypus_tridactylus_litdata, aes(x = longitude, y = latitude), color = "blue")
 
