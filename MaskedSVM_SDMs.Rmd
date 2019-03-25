@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(raster)
-source("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/maskRangeR/R/svm.R")
+library(maskRangeR)
 ```
 
 
