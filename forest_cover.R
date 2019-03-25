@@ -1,5 +1,9 @@
 library(raster)
 
+
+# Hansen Forest Loss ------------------------------------------------------
+
+
 # load data
 S00_W40 <- raster("/Users/hellenfellows/Desktop/forest_cover/Hansen_ForestLoss/Hansen_GFC-2017-v1.5_lossyear_00N_040W.tif")
 plot(S20_W80)
@@ -29,4 +33,8 @@ plot(datamask)
 writeRaster(datamask, "/Users/hellenfellows/Desktop/forest_cover/datamask.tif")
 
 
+# SPOT/PROBA-V ------------------------------------------------------------
+
+test_ncdf <- raster("/Users/hellenfellows/Desktop/c_gls_FCOVER__RT6_global_V2.0.1__0.5deg__1999-2017__UHAM-ICDC__v01.0_90W-30W_30S-20N.nc4/1999/c_gls_FCOVER__RT6_global_V2.0.1__0.5deg__19990110__UHAM-ICDC__v01.0_270.000E-330.000E_30.0000S-20.0000N.nc4")
+test2_ncdf <- raster("/Users/hellenfellows/Desktop/c_gls_FCOVER__RT6_global_V2.0.1__0.5deg__1999-2017__UHAM-ICDC__v01.0_90W-30W_30S-20N.nc4/2017/c_gls_FCOVER__RT6_global_V2.0.1__0.5deg__20171231__UHAM-ICDC__v01.0_270.000E-330.000E_30.0000S-20.0000N.nc4")
 
