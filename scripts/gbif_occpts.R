@@ -29,6 +29,10 @@ names(variegatus_gbif) <- c("name", "longitude", "latitude", "basisOfRecord", "c
 names(tridactylus_gbif) <- c("name", "longitude", "latitude", "basisOfRecord", "collectionCode", "coordinateUncertaintyInMeters", "datasetName", "dateIdentified", "year", "institutionCode")
 names(torquatus_gbif) <- c("name", "longitude", "latitude", "basisOfRecord", "collectionCode", "coordinateUncertaintyInMeters", "datasetName", "dateIdentified", "year", "institutionCode")
 
+variegatus_gbif$dateIdentified <- as.Date(variegatus_gbif$dateIdentified)
+tridactylus_gbif$dateIdentified <- as.Date(tridactylus_gbif$dateIdentified)
+torquatus_gbif$dateIdentified <- as.Date(torquatus_gbif$dateIdentified)
+
 # remove NAs
 variegatus_gbif <- variegatus_gbif[!is.na(variegatus_gbif$longitude), ]
 tridactylus_gbif <- tridactylus_gbif[!is.na(tridactylus_gbif$longitude), ]
@@ -120,9 +124,9 @@ ggmap(SA_map) +
   geom_polygon(data = tor_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0)
 
 
-# Further data cleaning ---------------------------------------------------
+# Further data cleaning: basis of record ---------------------------------------------------
 
-# visualize points and buffered region
+# visualize human record points and buffered region
 ggmap(SA_map) +
   geom_point(data = variegatus_gbif_buffer[variegatus_gbif_buffer$basisOfRecord == "HUMAN_OBSERVATION",], aes(x = longitude, y = latitude), color = "red") +
   geom_point(data = variegatus_gbif_buffer[variegatus_gbif_buffer$basisOfRecord != "HUMAN_OBSERVATION",], aes(x = longitude, y = latitude), color = "green") +
@@ -137,6 +141,29 @@ ggmap(SA_map) +
   geom_point(data = torquatus_gbif_buffer[torquatus_gbif_buffer$basisOfRecord == "HUMAN_OBSERVATION",], aes(x = longitude, y = latitude), color = "red") +
   geom_point(data = torquatus_gbif_buffer[torquatus_gbif_buffer$basisOfRecord != "HUMAN_OBSERVATION",], aes(x = longitude, y = latitude), color = "green") +
   geom_polygon(data = tor_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0)
+
+
+# Further data cleaning: years with forest cover data ---------------------
+
+# visualize just the points from years with forest cover data
+variegatus_gbif_buffer$occ_year <- NA
+for(i in 1:nrow(variegatus_gbif_buffer)){
+  if(!is.na(variegatus_gbif_buffer$dateIdentified[i])){
+    variegatus_gbif_buffer$occ_year[i] <- as.numeric(format(variegatus_gbif_buffer$dateIdentified[i], "%Y"))
+  } else if(!is.na(variegatus_gbif_buffer$year[i])){
+    variegatus_gbif_buffer$occ_year[i] <- variegatus_gbif_buffer$year[i]
+  }
+}
+
+# get data just from years with MODIS data
+variegatus_gbif_modis <- variegatus_gbif_buffer[!is.na(variegatus_gbif_buffer$occ_year),]
+variegatus_gbif_modis <- variegatus_gbif_modis[variegatus_gbif_buffer$occ_year >= 2001 & variegatus_gbif_buffer$occ_year <= 2017,]
+variegatus_gbif_modis <- variegatus_gbif_modis[!is.na(variegatus_gbif_modis$name),]
+
+ggmap(SA_map) +
+  geom_point(data = variegatus_gbif_modis, aes(x = longitude, y = latitude), color = "red") +
+  geom_polygon(data = var_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0)
+
 
 # Find forest cover values ------------------------------------------------
 
@@ -169,7 +196,28 @@ getMODIS <- function(path = "/Users/hellenfellows/Desktop/MODIS-C006_MCD12C1_lan
   return(data)
 }
 
+occurrence_MODIS <- function(occ_data){
+  MODIS_layers <- c("water", "evergreen_needleleaf_forest", "evergreen_broadleaf_forest",
+                    "deciduous_needleleaf_forest", "deciduous_broadleaf_forest",
+                    "mixed_forest", "closed_shrublands", "open_shrublands",
+                    "woody_savannas", "savannas", "grasslands", "permanent_wetlands",
+                    "croplands", "urban_and_builtup", "cropland_natural_vegetation_mosaic",
+                    "snowandice", "barren_sparsely_vegetated")
+  occ_data$MODIS_landcover <- NA
+  occ_data$perc_landcover <- NA
+  for (i in 1:nrow(occ_data)) {
+    occ_year <- occ_data$occ_year[i]
+    if(occ_year >= 2001 && occ_year <= 2017){
+      landcover_raster <- getMODIS(year = occ_year)
+      landcover <- extract(landcover_raster, occ_data[i, c("longitude", "latitude")], method = "simple")
+      occ_data$MODIS_landcover[i] <- MODIS_layers[landcover + 1]
+      coverage_raster <- getMODIS(year = occ_year, layer = paste0(occ_data$MODIS_landcover[i], "_igbp"))
+      occ_data$perc_landcover[i] <- extract(coverage_raster, occ_data[i, c("longitude", "latitude")], method = "bilinear")
+    }
+  }
+  return(occ_data)
+}
 
-
+variegatus_gbif_modis_vals <- occurrence_MODIS(variegatus_gbif_modis)
 
 
