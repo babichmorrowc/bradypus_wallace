@@ -1,0 +1,142 @@
+---
+title: "envRasterSources"
+author: "P.Galante"
+date: "March 29, 2019"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# forestChange
+
+Downloads various forest cover data from Hansen dataset.
+
+```{r forestChange, eval=F, echo=T}
+library(ENMeval)
+library(forestChange)
+
+# Get ADMS
+adms<-getGADM(level = 0, country = "GUF")
+plot(adms)
+
+gadm <- getData('GADM', country = "GUF", level = 0)
+
+plot(gadm)
+
+#  Lyrs possibilities are: treecover2000, gain, lossyear, datamask, first, last
+fcp <- FCPolygon(pol = gadm, multicore=T)
+
+#  plot
+names(fcp)
+plot(fcp)
+
+## Calculate EBVs
+ebvs <- EBVmetric(tc = fcp, met= "forest.ext", year = 0, perc = 80)
+
+## For multiple years, plot the metrics to see EBVs over time
+plot.EBVmetric(ebvs)
+
+
+mos <- FCMosaic(rst = NULL, lyrs = c("treecover2000", "lossyear"), multicore = T)
+```
+
+# CHELSA
+
+(30 arc sec) climate data set for the earth land surface areas. It includes monthly mean temperature and precipitation patterns for the time period 1979-2013.
+
+```{r CHELSA, eval=F, echo=T}
+library(devtools)
+#devtools::install_github("jimhester/archive")
+#devtools::install_github("MirzaCengic/climatedata")
+
+library(climatedata)
+library(tidyverse)
+library(archive)
+
+chelsa_bioclim <- get_chelsa(layer = 1:19, output_dir = "/home/pgalante/Garbage", period = "current")
+r <- raster('/home/pgalante/Garbage/CHELSA_bio10_1.tif')
+```
+
+# getSpatialData
+
+This R package has functions to download from 
+  - Sentinal
+  - Landsat
+  - MODIS
+
+```{r getSpatialData, eval=F, echo=T}
+#devtools::install_github('16EAGLE/getSpatialData')
+library(getSpatialData)
+
+# Landsat 
+## Requires USGS EROS username and password
+getLandsat_names()
+
+# Sentinel
+## Requires USGS EROS username and password
+getSentinel_query()
+
+# MODIS
+## Requires USGS EROS username and password
+getMODIS_names()
+```
+
+# red
+
+red downloads landcover data and does 4 steps that we might be able to change
+1. Checks if maxent.jar is available in dismo
+2. gets destination directory
+3. Downloads global bioclim and elevation (should shut this off)
+4. download landcoverfiles (12) from EarthEnv 
+5. Unzips the files, deletes the '.zip's 
+6. creates a new layer with dominant landcover at each cell
+7. Resamples cells to 10x10km 
+
+We should hack this function to get only step 4,5,6 and edit 7.
+
+```{r red, echo=T, eval=F}
+library(red)
+# don't run this unless you mean it - it saves ~50g of files but ends up with ~17g
+red.setup()
+```
+
+# EarthEnv
+
+```{r, earthenv, echo=T, eval=F}
+## make file names
+for (k in 1:12){
+  dest[[k]] <- paste0("/home/pgalante/Garbage/earthenvs/Consensus_reduced_class_", k, ".tif")
+}
+## save each file
+for (i in 1:12){
+  download.file(paste0("data.earthenv.org/consensus_landcover/without_DISCover/Consensus_reduced_class_", i, ".tif"), destfile = dest[[i]], method = "auto")
+}
+```
+
+#  soilGrids - still working on this one
+
+```{r, soilgrids, echo=T, eval=F}
+library(RCurl)
+library(rgdal)
+library(GSIF)
+library(raster)
+library(plotKML)
+library(XML)
+library(lattice)
+library(aqp)
+library(soiltexture)
+sg.ftp <- "ftp://ftp.soilgrids.org/data/recent/"
+filenames = getURL(sg.ftp, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+filenames = strsplit(filenames, "\r*\n")[[1]]
+filenames[1:5]
+
+ORC.name <- filenames[grep(filenames, pattern=glob2rx("ORCDRC_M_sl1_250m_ll.tif$"))]
+ORC.name
+try(download.file(paste(sg.ftp, ORC.name, sep=""), ORC.name))
+```
+
+# neotoma - still wokring on this one too

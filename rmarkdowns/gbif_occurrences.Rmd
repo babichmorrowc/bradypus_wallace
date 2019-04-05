@@ -1,0 +1,255 @@
+---
+title: "GBIF occurrence points"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Including GBIF points
+
+Since the occurrence data I used to create the Maxent models is all historical data from different papers, I currently have no occurrence points recent enough to temporally match with remotely sensed forest cover data. To address this issue, I have been looking into using GBIF occurrence data to find a forest cover threshold. The quality of the GBIF data is fairly poor though, so I need to develop some kind of standard for whether a given GBIF point is close enough to my known occurrence points for that species to be included.
+
+```{r, message=FALSE}
+# load packages
+library(spocc)
+library(ggmap)
+library(rgeos)
+library(sp)
+api_key = "AIzaSyBK7lLbqoqnYFdzf-idYYposb-1gwyRAlQ"
+register_google(key = api_key)
+```
+
+### Literature data
+
+The following is the occurrence data from papers that I have used to create my Maxent models.
+
+```{r, message=FALSE}
+# read in literature data
+dataDir = '/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Occurrence_Data/'
+
+# Species occurrence coordinates
+variegatus_lit <- read.csv(paste0(dataDir,'Bradypus_variegatus_litdata.csv'))
+tridactylus_lit <- read.csv(paste0(dataDir,'Bradypus_tridactylus_litdata.csv'))
+torquatus_lit <- read.csv(paste0(dataDir,'Bradypus_torquatus_litdata.csv'))
+
+SA_bbox <- make_bbox(lon = c(-97, -25), lat = c(-25,20), f = 0.1)
+SA_map <- get_map(location = SA_bbox, source = "google", maptype = "satellite")
+ggmap(SA_map) +
+  ggtitle("Literature Occurrence Points") +
+  geom_point(data = variegatus_lit, aes(x = longitude, y = latitude, color = "variegatus"), cex = 0.8) +
+  geom_point(data = tridactylus_lit, aes(x = longitude, y = latitude, color = "tridactylus"), cex = 0.8) +
+  geom_point(data = torquatus_lit, aes(x = longitude, y = latitude, color = "torquatus"), cex = 0.8) +
+  scale_color_manual(name = "Legend", values = c(variegatus = "darkorange1", tridactylus = "springgreen", torquatus = "deepskyblue"))
+```
+
+### GBIF data
+
+I loaded GBIF data for all three species and removed records with no coordinates as well as records at the coordinates (0, 0).
+
+```{r}
+variegatus_gbif <- occ(query = "Bradypus variegatus", from = 'gbif', limit = 2000)
+tridactylus_gbif <- occ(query = "Bradypus tridactylus", from = 'gbif', limit = 2000)
+torquatus_gbif <- occ(query = "Bradypus torquatus", from = 'gbif', limit = 2000)
+
+variegatus_gbif <- occ2df(variegatus_gbif)
+tridactylus_gbif <- occ2df(tridactylus_gbif)
+torquatus_gbif <- occ2df(torquatus_gbif)
+
+# remove NAs
+variegatus_gbif <- variegatus_gbif[!is.na(variegatus_gbif$longitude), ]
+tridactylus_gbif <- tridactylus_gbif[!is.na(tridactylus_gbif$longitude), ]
+torquatus_gbif <- torquatus_gbif[!is.na(torquatus_gbif$longitude), ]
+
+# remove points at 0, 0
+variegatus_gbif <- variegatus_gbif[variegatus_gbif$longitude != 0, ]
+tridactylus_gbif <- tridactylus_gbif[tridactylus_gbif$longitude != 0, ]
+torquatus_gbif <- torquatus_gbif[torquatus_gbif$longitude != 0, ]
+
+ggmap(SA_map) +
+  ggtitle("GBIF Occurrence Points") +
+  geom_point(data = variegatus_gbif, aes(x = longitude, y = latitude, color = "variegatus"), cex = 0.8) +
+  geom_point(data = tridactylus_gbif, aes(x = longitude, y = latitude, color = "tridactylus"), cex = 0.8) +
+  geom_point(data = torquatus_gbif, aes(x = longitude, y = latitude, color = "torquatus"), cex = 0.8) +
+  scale_color_manual(name = "Legend", values = c(variegatus = "darkorange1", tridactylus = "springgreen", torquatus = "deepskyblue"))
+```
+
+Clearly, certain species, particularly *B. tridactylus*, are frequently misidentified, with occurrence records well outside of the species' range.
+
+Here, we can see maps for each species with the data from literature and the GBIF points in red:
+
+```{r}
+ggmap(SA_map) +
+  ggtitle("Bradypus variegatus") +
+  geom_point(data = variegatus_lit, aes(x = longitude, y = latitude, color = "literature"), cex = 0.8) +
+  geom_point(data = variegatus_gbif, aes(x = longitude, y = latitude, color = "GBIF"), cex = 0.8) +
+  scale_color_manual(name = "Legend", values = c(literature = "darkorange1", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus tridactylus") +
+  geom_point(data = tridactylus_lit, aes(x = longitude, y = latitude, color = "literature"), cex = 0.8) +
+  geom_point(data = tridactylus_gbif, aes(x = longitude, y = latitude, color = "GBIF"), cex = 0.8) +
+  scale_color_manual(name = "Legend", values = c(literature = "springgreen", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus torquatus") +
+  geom_point(data = torquatus_lit, aes(x = longitude, y = latitude, color = "literature"), cex = 0.8) +
+  geom_point(data = torquatus_gbif, aes(x = longitude, y = latitude, color = "GBIF"), cex = 0.8) +
+  scale_color_manual(name = "Legend", values = c(literature = "deepskyblue", GBIF = "red"))
+```
+
+
+## Minimum convex polygon
+
+The first method I tried to identify GBIF points "close enough" to known occurrence points was a minimum convex polygon (MCP) for each species.
+
+```{r}
+# function to make a minimum convex polygon as SpatialPolygons object
+mcp <- function(xy) {
+  xy <- as.data.frame(sp::coordinates(xy))
+  coords.t <- chull(xy[, 1], xy[, 2])
+  xy.bord <- xy[coords.t, ]
+  xy.bord <- rbind(xy.bord[nrow(xy.bord), ], xy.bord)
+  return(sp::SpatialPolygons(list(sp::Polygons(list(sp::Polygon(as.matrix(xy.bord))), 1))))
+}
+
+# create MCP for literature data from all three species
+var_mcp <- mcp(variegatus_lit[,2:3])
+tri_mcp <- mcp(tridactylus_lit[,2:3])
+tor_mcp <- mcp(torquatus_lit[,2:3])
+```
+
+Now we can visualize the MCP for each species with the occurrence points from literature and GBIF:
+
+```{r}
+ggmap(SA_map) +
+  ggtitle("Bradypus variegatus") +
+  geom_point(data = variegatus_lit, aes(x = longitude, y = latitude, color = "literature"), cex = 0.8) +
+  geom_point(data = variegatus_gbif, aes(x = longitude, y = latitude, color = "GBIF"), cex = 0.8) +
+  geom_polygon(data = fortify(var_mcp), aes(x = long, y = lat), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "darkorange1", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus tridactylus") +
+  geom_point(data = tridactylus_lit, aes(x = longitude, y = latitude, color = "literature"), cex = 0.8) +
+  geom_point(data = tridactylus_gbif, aes(x = longitude, y = latitude, color = "GBIF"), cex = 0.8) +
+  geom_polygon(data = fortify(tri_mcp), aes(x = long, y = lat), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "springgreen", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus torquatus") +
+  geom_point(data = torquatus_lit, aes(x = longitude, y = latitude, color = "literature"), cex = 0.8) +
+  geom_point(data = torquatus_gbif, aes(x = longitude, y = latitude, color = "GBIF"), cex = 0.8) +
+  geom_polygon(data = fortify(tor_mcp), aes(x = long, y = lat), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "deepskyblue", GBIF = "red"))
+```
+
+Overall, the MCP approach includes too many of the GBIF points for *B. variegatus*, particularly the occurrence point that is in *B. tridactylus*'s range. The MCP for *B. tridactylus* looks fairly good, although it might be a little overly conservative by excluding all of the *B. tridactylus* GBIF points along the French Guiana - Brazil border. The MCP for torquatus looks good -- it excludes the GBIF points I'd like to get rid of.
+
+## Buffered points
+
+Next I tried some buffered point regions, starting at 1 degree and moving to 4 degrees (since a 4 degree buffer was what we selected as a background region for Maxent modeling).
+
+### 1 degree buffer
+
+```{r}
+# make SpatialPoints objects for buffering
+var_sp <- SpatialPoints(variegatus_lit[,2:3])
+tri_sp <- SpatialPoints(tridactylus_lit[,2:3])
+tor_sp <- SpatialPoints(torquatus_lit[,2:3])
+
+var_buffer <- gBuffer(var_sp, width = 1)
+tri_buffer <- gBuffer(tri_sp, width = 1)
+tor_buffer <- gBuffer(tor_sp, width = 1)
+
+ggmap(SA_map) +
+  ggtitle("Bradypus variegatus") +
+  geom_point(data = variegatus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = variegatus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = var_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "darkorange1", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus tridactylus") +
+  geom_point(data = tridactylus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = tridactylus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = tri_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "springgreen", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus torquatus") +
+  geom_point(data = torquatus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = torquatus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = tor_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "deepskyblue", GBIF = "red"))
+```
+
+The 1-degree buffer is definitely much more conservative than the MCP. For *B. torquatus*, the 1-degree buffer still includes the points that I would want to include. I'm fairly comfortable with this conservative estimate for *B. variegatus* too. The 1-degree buffer region for *B. tridactylus*, however, excludes a lot of occurrence points that I would guess are true occurrence points.
+
+## 2 degree buffer
+
+```{r}
+var_buffer <- gBuffer(var_sp, width = 2)
+tri_buffer <- gBuffer(tri_sp, width = 2)
+tor_buffer <- gBuffer(tor_sp, width = 2)
+
+ggmap(SA_map) +
+  ggtitle("Bradypus variegatus") +
+  geom_point(data = variegatus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = variegatus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = var_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "darkorange1", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus tridactylus") +
+  geom_point(data = tridactylus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = tridactylus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = tri_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "springgreen", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus torquatus") +
+  geom_point(data = torquatus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = torquatus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = tor_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "deepskyblue", GBIF = "red"))
+```
+
+I'm pretty comfortable with the 2-degree buffer region for all three species, although it may still be too conservative for *B. tridactylus*.
+
+### 4 degree buffer
+
+```{r}
+var_buffer <- gBuffer(var_sp, width = 4)
+tri_buffer <- gBuffer(tri_sp, width = 4)
+tor_buffer <- gBuffer(tor_sp, width = 4)
+
+ggmap(SA_map) +
+  ggtitle("Bradypus variegatus") +
+  geom_point(data = variegatus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = variegatus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = var_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "darkorange1", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus tridactylus") +
+  geom_point(data = tridactylus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = tridactylus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = tri_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "springgreen", GBIF = "red"))
+
+ggmap(SA_map) +
+  ggtitle("Bradypus torquatus") +
+  geom_point(data = torquatus_lit, aes(x = longitude, y = latitude, color = "literature")) +
+  geom_point(data = torquatus_gbif, aes(x = longitude, y = latitude, color = "GBIF")) +
+  geom_polygon(data = tor_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0) +
+  scale_color_manual(name = "Legend", values = c(literature = "deepskyblue", GBIF = "red"))
+```
+
+The 4-degree buffer definitely includes too many GBIF points for all 3 species.
+
+## Conclusions
+
+Right now, I'm leaning towards using the 1-degree point buffer or possibly the 2-degree buffer as my criterion for GBIF points to be used in calculating forest cover threshold. The MCP and 4-degree buffers include too many of the erroneous GBIF points and should not be used. Alternatively, I could do an alpha-hull instead of the MCP, but since we only need enough recent points to find a forest cover threshold, I don't think we need to be too concerned about including every single correct GBIF occurrence point. In the spirit of being cautious, I'm thinking I move forward with finding forest cover values for the GBIF points within a 1-degree buffer of the literature occurrence points -- let me know if this sounds good or if there is a different way I should try out.
+
