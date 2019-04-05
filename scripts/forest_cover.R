@@ -80,3 +80,9 @@ test_modis2001 <- raster("/Users/hellenfellows/Desktop/MODIS-C006_MCD12C1_landco
 plot(test_modis2001)
 
 # need to mask out the ocean
+
+# extract raster value for given coordinate
+value <- extract(test_modis2001, variegatus_gbif_buffer[1,2:3])
+
+
+
