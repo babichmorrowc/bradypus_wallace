@@ -53,38 +53,6 @@ ggmap(SA_map) +
   geom_point(data = torquatus_lit, aes(x = longitude, y = latitude)) +
   geom_point(data = torquatus_gbif, aes(x = longitude, y = latitude), color = "red")
 
-# MCP ---------------------------------------------------------------------
-
-# function to make a minimum convex polygon as SpatialPolygons object
-mcp <- function(xy) {
-  xy <- as.data.frame(sp::coordinates(xy))
-  coords.t <- chull(xy[, 1], xy[, 2])
-  xy.bord <- xy[coords.t, ]
-  xy.bord <- rbind(xy.bord[nrow(xy.bord), ], xy.bord)
-  return(sp::SpatialPolygons(list(sp::Polygons(list(sp::Polygon(as.matrix(xy.bord))), 1))))
-}
-
-# create MCP for literature data from all three species
-var_mcp <- mcp(variegatus_lit[,2:3])
-tri_mcp <- mcp(tridactylus_lit[,2:3])
-tor_mcp <- mcp(torquatus_lit[,2:3])
-
-# visualize points and MCP
-
-ggmap(SA_map) +
-  geom_point(data = variegatus_lit, aes(x = longitude, y = latitude)) +
-  geom_point(data = variegatus_gbif, aes(x = longitude, y = latitude), color = "red") +
-  geom_polygon(data = fortify(var_mcp), aes(x = long, y = lat), color = "black", alpha = 0)
-
-ggmap(SA_map) +
-  geom_point(data = tridactylus_lit, aes(x = longitude, y = latitude)) +
-  geom_point(data = tridactylus_gbif, aes(x = longitude, y = latitude), color = "red") +
-  geom_polygon(data = fortify(tri_mcp), aes(x = long, y = lat), color = "black", alpha = 0)
-
-ggmap(SA_map) +
-  geom_point(data = torquatus_lit, aes(x = longitude, y = latitude)) +
-  geom_point(data = torquatus_gbif, aes(x = longitude, y = latitude), color = "red") +
-  geom_polygon(data = fortify(tor_mcp), aes(x = long, y = lat), color = "black", alpha = 0)
 
 # Buffered points ---------------------------------------------------------
 
@@ -93,9 +61,9 @@ var_sp <- SpatialPoints(variegatus_lit[,2:3])
 tri_sp <- SpatialPoints(tridactylus_lit[,2:3])
 tor_sp <- SpatialPoints(torquatus_lit[,2:3])
 
-var_buffer <- gBuffer(var_sp, width = 4)
-tri_buffer <- gBuffer(tri_sp, width = 4)
-tor_buffer <- gBuffer(tor_sp, width = 4)
+var_buffer <- gBuffer(var_sp, width = 1)
+tri_buffer <- gBuffer(tri_sp, width = 1)
+tor_buffer <- gBuffer(tor_sp, width = 1)
 
 # visualize points and buffered region
 plot(var_buffer)
