@@ -145,7 +145,7 @@ ggmap(SA_map) +
 
 # Further data cleaning: years with forest cover data ---------------------
 
-# visualize just the points from years with forest cover data
+# Create occ_year column
 variegatus_gbif_buffer$occ_year <- NA
 for(i in 1:nrow(variegatus_gbif_buffer)){
   if(!is.na(variegatus_gbif_buffer$dateIdentified[i])){
@@ -155,14 +155,49 @@ for(i in 1:nrow(variegatus_gbif_buffer)){
   }
 }
 
+tridactylus_gbif_buffer$occ_year <- NA
+for(i in 1:nrow(tridactylus_gbif_buffer)){
+  if(!is.na(tridactylus_gbif_buffer$dateIdentified[i])){
+    tridactylus_gbif_buffer$occ_year[i] <- as.numeric(format(tridactylus_gbif_buffer$dateIdentified[i], "%Y"))
+  } else if(!is.na(tridactylus_gbif_buffer$year[i])){
+    tridactylus_gbif_buffer$occ_year[i] <- tridactylus_gbif_buffer$year[i]
+  }
+}
+
+torquatus_gbif_buffer$occ_year <- NA
+for(i in 1:nrow(torquatus_gbif_buffer)){
+  if(!is.na(torquatus_gbif_buffer$dateIdentified[i])){
+    torquatus_gbif_buffer$occ_year[i] <- as.numeric(format(torquatus_gbif_buffer$dateIdentified[i], "%Y"))
+  } else if(!is.na(torquatus_gbif_buffer$year[i])){
+    torquatus_gbif_buffer$occ_year[i] <- torquatus_gbif_buffer$year[i]
+  }
+}
+
 # get data just from years with MODIS data
 variegatus_gbif_modis <- variegatus_gbif_buffer[!is.na(variegatus_gbif_buffer$occ_year),]
 variegatus_gbif_modis <- variegatus_gbif_modis[variegatus_gbif_buffer$occ_year >= 2001 & variegatus_gbif_buffer$occ_year <= 2017,]
 variegatus_gbif_modis <- variegatus_gbif_modis[!is.na(variegatus_gbif_modis$name),]
 
+tridactylus_gbif_modis <- tridactylus_gbif_buffer[!is.na(tridactylus_gbif_buffer$occ_year),]
+tridactylus_gbif_modis <- tridactylus_gbif_modis[tridactylus_gbif_buffer$occ_year >= 2001 & tridactylus_gbif_buffer$occ_year <= 2017,]
+tridactylus_gbif_modis <- tridactylus_gbif_modis[!is.na(tridactylus_gbif_modis$name),]
+
+torquatus_gbif_modis <- torquatus_gbif_buffer[!is.na(torquatus_gbif_buffer$occ_year),]
+torquatus_gbif_modis <- torquatus_gbif_modis[torquatus_gbif_buffer$occ_year >= 2001 & torquatus_gbif_buffer$occ_year <= 2017,]
+torquatus_gbif_modis <- torquatus_gbif_modis[!is.na(torquatus_gbif_modis$name),]
+
+
 ggmap(SA_map) +
   geom_point(data = variegatus_gbif_modis, aes(x = longitude, y = latitude), color = "red") +
   geom_polygon(data = var_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0)
+
+ggmap(SA_map) +
+  geom_point(data = tridactylus_gbif_modis, aes(x = longitude, y = latitude), color = "red") +
+  geom_polygon(data = tri_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0)
+
+ggmap(SA_map) +
+  geom_point(data = torquatus_gbif_modis, aes(x = longitude, y = latitude), color = "red") +
+  geom_polygon(data = tor_buffer, aes(x = long, y = lat, group = group), color = "black", alpha = 0)
 
 
 # Find forest cover values ------------------------------------------------
@@ -219,5 +254,21 @@ occurrence_MODIS <- function(occ_data){
 }
 
 variegatus_gbif_modis_vals <- occurrence_MODIS(variegatus_gbif_modis)
+tridactylus_gbif_modis_vals <- occurrence_MODIS(tridactylus_gbif_modis)
+torquatus_gbif_modis_vals <- occurrence_MODIS(torquatus_gbif_modis)
 
+View(variegatus_gbif_modis_vals)
+View(tridactylus_gbif_modis_vals)
+View(torquatus_gbif_modis_vals)
 
+summary(as.factor((variegatus_gbif_modis_vals$MODIS_landcover)))
+summary(as.factor((tridactylus_gbif_modis_vals$MODIS_landcover)))
+summary(as.factor((torquatus_gbif_modis_vals$MODIS_landcover)))
+
+hist(variegatus_gbif_modis_vals$perc_landcover[variegatus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
+hist(tridactylus_gbif_modis_vals$perc_landcover[tridactylus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
+hist(torquatus_gbif_modis_vals$perc_landcover[torquatus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
+
+favstats(variegatus_gbif_modis_vals$perc_landcover[variegatus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
+favstats(tridactylus_gbif_modis_vals$perc_landcover[tridactylus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
+favstats(torquatus_gbif_modis_vals$perc_landcover[torquatus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
