@@ -85,4 +85,20 @@ plot(test_modis2001)
 value <- extract(test_modis2001, variegatus_gbif_buffer[1,2:3])
 
 
+# NDVI --------------------------------------------------------------------
 
+test_ndvi <- raster("/Users/hellenfellows/Downloads/AVHRR-Land_v004-preliminary_AVH13C1_NOAA-19_20190101_c20190128162948.nc")
+# varname could be NDVI, TIMEOFDAY, or QA
+
+
+# GIMMS NDVI --------------------------------------------------------------
+
+test_gimms <- raster("/Users/hellenfellows/Desktop/gimms_ndvi_qd_1981-2002/gimms_ndvi_qd_19890600.asc")
+test_gimms[test_gimms < -1] <- NA
+cellStats(test_gimms, stat = "max")
+cellStats(test_gimms, stat = "min")
+
+test_gimms <- raster("/Users/hellenfellows/Desktop/gimms_ndvi_qd_1981-2002/gimms_ndvi_qd_19890600.asc")
+test_gimms_crop <- crop(test_gimms, extent(c(-95, -25, -25, 20)))
+test_gimms_crop[test_gimms_crop == -88] <- NA
+plot(test_gimms_crop)
