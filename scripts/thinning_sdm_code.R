@@ -309,15 +309,11 @@ writeRaster(thinned_tor_proj_bbox, "thinned_torquatus_bbox.tif")
 
 # Response curves ---------------------------------------------------------
 
-thinned_var_mod$betas
-plot(thinned_var_mod, vars = c('bio10', 'bio13', 'bio18', 'bio2', 'bio3', 'bio4', 'bio8'), type = "cloglog")
+thinned_tri_mod_4_LQ2$betas
+plot(thinned_tri_mod_4_LQ2, vars = c('bio12', 'bio19', 'bio6'))
 
-thinned_tri_mod$betas
-plot(thinned_tri_mod, vars = c('bio16', 'bio4', 'bio6'))
-
-thinned_tor_mod$betas
-plot(thinned_tor_mod, vars = c('bio12', 'bio2', 'bio3'))
-
+thinned_tor_mod_4$betas
+plot(thinned_tor_mod_4, vars = c('bio14', 'bio2', 'bio3'))
 
 # Threshold models --------------------------------------------------------
 
