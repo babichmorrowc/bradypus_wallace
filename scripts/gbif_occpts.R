@@ -272,3 +272,29 @@ hist(torquatus_gbif_modis_vals$perc_landcover[torquatus_gbif_modis_vals$MODIS_la
 favstats(variegatus_gbif_modis_vals$perc_landcover[variegatus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
 favstats(tridactylus_gbif_modis_vals$perc_landcover[tridactylus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
 favstats(torquatus_gbif_modis_vals$perc_landcover[torquatus_gbif_modis_vals$MODIS_landcover == "evergreen_broadleaf_forest"])
+
+# add a column with evergreen_broadleaf_forest coverage values
+variegatus_gbif_modis_vals$ebf_perc <- NA
+for (i in 1:nrow(variegatus_gbif_modis_vals)) {
+  occ_year <- variegatus_gbif_modis_vals$occ_year[i]
+    ebf_raster <- getMODIS(year = occ_year, layer = "evergreen_broadleaf_forest_igbp")
+    variegatus_gbif_modis_vals$ebf_perc[i] <- extract(ebf_raster, variegatus_gbif_modis_vals[i, c("longitude", "latitude")], method = "bilinear")
+}
+
+tridactylus_gbif_modis_vals$ebf_perc <- NA
+for (i in 1:nrow(tridactylus_gbif_modis_vals)) {
+  occ_year <- tridactylus_gbif_modis_vals$occ_year[i]
+  ebf_raster <- getMODIS(year = occ_year, layer = "evergreen_broadleaf_forest_igbp")
+  tridactylus_gbif_modis_vals$ebf_perc[i] <- extract(ebf_raster, tridactylus_gbif_modis_vals[i, c("longitude", "latitude")], method = "bilinear")
+}
+
+torquatus_gbif_modis_vals$ebf_perc <- NA
+for (i in 1:nrow(torquatus_gbif_modis_vals)) {
+  occ_year <- torquatus_gbif_modis_vals$occ_year[i]
+  ebf_raster <- getMODIS(year = occ_year, layer = "evergreen_broadleaf_forest_igbp")
+  torquatus_gbif_modis_vals$ebf_perc[i] <- extract(ebf_raster, torquatus_gbif_modis_vals[i, c("longitude", "latitude")], method = "bilinear")
+}
+
+
+
+
