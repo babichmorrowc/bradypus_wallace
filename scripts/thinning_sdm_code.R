@@ -193,6 +193,16 @@ rms <- seq(0.5, 5, 0.5)
 # iterate model building over all chosen parameter settings
 thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk, bg.coords = buffer_var_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
                                       method = 'block', clamp = TRUE, algorithm = "maxnet")
+# *** Running ENMevaluate using maxnet v.0.1.2 ***
+#   Doing evaluations using spatial blocks...
+# There are 2 occurrence records with NA for at least
+# one predictor variable. Removing these records from analysis,
+# resulting in 130 records...
+# |===============                                                          |  20%Error in intI(j, n = x@Dim[2], dn[[2]], give.dn = FALSE) : 
+#   index larger than maximal 195
+# In addition: Warning message:
+#   from glmnet Fortran code (error code -196); Convergence for 196th lambda value not reached after maxit=100000 iterations; solutions for larger lambdas returned 
+
 # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_var_evalTbl <- thinned_var_e@results
 thinned_var_evalTbl <- thinned_var_evalTbl[with(thinned_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -228,32 +238,32 @@ thinned_tri_e <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk, bg.coo
                                       method = 'jackknife', clamp = TRUE, algorithm = "maxnet")
 # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_tri_evalTbl <- thinned_tri_e@results
-thinned_tri_evalTbl <- thinned_tri_evalTbl[with(thinned_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 View(thinned_tri_evalTbl)
 write_csv(thinned_tri_evalTbl, "./maxentoutputs/thinned_tri_evalTbl.csv")
+# get all models with delta AICc <= 2
+aic_tri_evalTbl <- thinned_tri_evalTbl[thinned_tri_evalTbl$delta.AICc <= 2.0, ]
+aic_tri_evalTbl <- aic_tri_evalTbl[with(aic_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
+View(aic_tri_evalTbl)
 #evaluation table for tridactylus with spatial thinning and bias file:
 thinned_tri_evalMods <- thinned_tri_e@models
 names(thinned_tri_evalMods) <- thinned_tri_e@results$settings
 thinned_tri_evalPreds <- thinned_tri_e@predictions
 # Select your model from the models list
-thinned_tri_mod <- thinned_tri_evalMods[[]]
+thinned_tri_mod <- thinned_tri_evalMods[["H_4"]]
 # generate cloglog prediction
 thinned_tri_pred <- ENMeval::maxnet.predictRaster(thinned_tri_mod, tri_envsBgMsk, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
 plot(thinned_tri_pred)
-plot(thinned_tri_pred)
-plot(thinned_tri_pred)
-plot(thinned_tri_pred)
 #project to entire extent
-thinned_tri_proj_4_LQ2 <- ENMeval::maxnet.predictRaster(thinned_tri_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
+thinned_tri_proj <- ENMeval::maxnet.predictRaster(thinned_tri_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
 #project to tridactylus extent
 thinned_tri_proj_bbox <- ENMeval::maxnet.predictRaster(thinned_tri_mod, Env_tri, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
 plot(thinned_tri_proj)
-plot(thinned_tri_proj)
+plot(thinned_tri_proj_bbox)
 
 #save cloglog prediction
-writeRaster(thinned_tri_proj, "thinned_tridactylus_LQ_2_cloglog.tif")
+writeRaster(thinned_tri_proj, "thinned_tridactylus_H_3_cloglog.tif")
 writeRaster(thinned_tri_proj_bbox, "thinned_tridactylus_bbox.tif")
 
 
@@ -263,15 +273,18 @@ thinned_tor_e <- ENMeval::ENMevaluate(thinned_tor_occs.xy, tor_envsBgMsk, bg.coo
                                       method = 'jackknife', clamp = TRUE, algorithm = "maxnet")
 # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_tor_evalTbl <- thinned_tor_e@results
-thinned_tor_evalTbl <- thinned_tor_evalTbl[with(thinned_tor_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 View(thinned_tor_evalTbl)
 write_csv(thinned_tor_evalTbl, "./maxentoutputs/thinned_tor_evalTbl.csv")
+# get all models with delta AICc <= 2
+aic_tor_evalTbl <- thinned_tor_evalTbl[thinned_tor_evalTbl$delta.AICc <= 2.0, ]
+aic_tor_evalTbl <- aic_tor_evalTbl[with(aic_tor_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
+View(aic_tor_evalTbl)
 #evaluation table for torquatus with spatial thinning and bias file:
 thinned_tor_evalMods <- thinned_tor_e@models
 names(thinned_tor_evalMods) <- thinned_tor_e@results$settings
 thinned_tor_evalPreds <- thinned_tor_e@predictions
 # Select your model from the models list
-thinned_tor_mod <- thinned_tor_evalMods[["H_3"]]
+thinned_tor_mod <- thinned_tor_evalMods[["H_4.5"]]
 # generate cloglog prediction
 thinned_tor_pred <- ENMeval::maxnet.predictRaster(thinned_tor_mod, tor_envsBgMsk, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
