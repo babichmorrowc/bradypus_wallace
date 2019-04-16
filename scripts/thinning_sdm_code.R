@@ -193,27 +193,21 @@ rms <- seq(0.5, 5, 0.5)
 # iterate model building over all chosen parameter settings
 thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk, bg.coords = buffer_var_bg.xy, RMvalues = rms, fc = c('L', 'LQ', 'H', 'LQH'), 
                                       method = 'block', clamp = TRUE, algorithm = "maxnet")
-# *** Running ENMevaluate using maxnet v.0.1.2 ***
-#   Doing evaluations using spatial blocks...
-# There are 2 occurrence records with NA for at least
-# one predictor variable. Removing these records from analysis,
-# resulting in 130 records...
-# |===============                                                          |  20%Error in intI(j, n = x@Dim[2], dn[[2]], give.dn = FALSE) : 
-#   index larger than maximal 195
-# In addition: Warning message:
-#   from glmnet Fortran code (error code -196); Convergence for 196th lambda value not reached after maxit=100000 iterations; solutions for larger lambdas returned 
 
 # unpack the results data frame, the list of models, and the RasterStack of raw predictions
 thinned_var_evalTbl <- thinned_var_e@results
-thinned_var_evalTbl <- thinned_var_evalTbl[with(thinned_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
 View(thinned_var_evalTbl)
 write_csv(thinned_var_evalTbl, "./maxentoutputs/thinned_var_evalTbl.csv")
+# get all models with delta AICc <= 2
+aic_var_evalTbl <- thinned_var_evalTbl[thinned_var_evalTbl$delta.AICc <= 2.0, ]
+aic_var_evalTbl <- aic_var_evalTbl[with(aic_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
+View(aic_var_evalTbl)
 #evaluation table for variegatus with spatial thinning and bias file:
 thinned_var_evalMods <- thinned_var_e@models
 names(thinned_var_evalMods) <- thinned_var_e@results$settings
 thinned_var_evalPreds <- thinned_var_e@predictions
 # Select your model from the models list
-thinned_var_mod <- thinned_var_evalMods[[]]
+thinned_var_mod <- thinned_var_evalMods[["LQH_2.5"]]
 # generate cloglog prediction
 thinned_var_pred <- ENMeval::maxnet.predictRaster(thinned_var_mod, var_envsBgMsk, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
@@ -228,7 +222,7 @@ plot(thinned_var_proj_bbox)
 
 
 #save cloglog prediction
-writeRaster(thinned_var_proj, "thinned_variegatus_L_1_cloglog.tif")
+writeRaster(thinned_var_proj, "thinned_variegatus_LQH_2.5_cloglog.tif")
 writeRaster(thinned_var_proj_bbox, "thinned_variegatus_bbox.tif")
 
 
@@ -263,7 +257,7 @@ plot(thinned_tri_proj)
 plot(thinned_tri_proj_bbox)
 
 #save cloglog prediction
-writeRaster(thinned_tri_proj, "thinned_tridactylus_H_3_cloglog.tif")
+writeRaster(thinned_tri_proj, "thinned_tridactylus_H_4_cloglog.tif")
 writeRaster(thinned_tri_proj_bbox, "thinned_tridactylus_bbox.tif")
 
 
@@ -298,8 +292,7 @@ plot(thinned_tor_proj)
 plot(thinned_tor_proj_bbox)
 
 #save cloglog prediction
-writeRaster(thinned_tor_proj
-            , "thinned_torquatus_H_3_cloglog.tif")
+writeRaster(thinned_tor_proj, "thinned_torquatus_H_4.5_cloglog.tif")
 writeRaster(thinned_tor_proj_bbox, "thinned_torquatus_bbox.tif")
 
 # Response curves ---------------------------------------------------------
