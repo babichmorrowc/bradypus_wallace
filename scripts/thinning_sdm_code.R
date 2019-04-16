@@ -297,11 +297,14 @@ writeRaster(thinned_tor_proj_bbox, "thinned_torquatus_bbox.tif")
 
 # Response curves ---------------------------------------------------------
 
-thinned_tri_mod_4_LQ2$betas
-plot(thinned_tri_mod_4_LQ2, vars = c('bio12', 'bio19', 'bio6'))
+thinned_var_mod$betas
+plot(thinned_var_mod, vars = paste0('wc2.0_bio_30s_', c("02", "04", "06", "07", "10", "11", "12", "13", "16", "17", "18", "19")))
 
-thinned_tor_mod_4$betas
-plot(thinned_tor_mod_4, vars = c('bio14', 'bio2', 'bio3'))
+thinned_tri_mod$betas
+plot(thinned_tri_mod, vars = c('wc2.0_bio_30s_06'))
+
+thinned_tor_mod$betas
+plot(thinned_tor_mod, vars = c('wc2.0_bio_30s_14'))
 
 # Threshold models --------------------------------------------------------
 
@@ -309,35 +312,35 @@ source("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Wallace_code/sdm_threshol
 
 # thresholded models at MTP and 10th percentile
 # variegatus
-thinned_var_proj_thresh_mtp <- sdm_threshold(thinned_var_proj_4, thinned_var_occs[,2:3], "mtp")
-plot(thinned_var_proj_thresh_mtp)
-thinned_var_proj_thresh_p10 <- sdm_threshold(thinned_var_proj_4, thinned_var_occs[,2:3], "p10")
-plot(thinned_var_proj_thresh_p10)
+thinned_var_proj_mtp <- sdm_threshold(thinned_var_proj, thinned_var_occs[,2:3], "mtp")
+plot(thinned_var_proj_mtp, zlim = c(0, 1))
+thinned_var_proj_p10 <- sdm_threshold(thinned_var_proj, thinned_var_occs[,2:3], "p10")
+plot(thinned_var_proj_p10, zlim = c(0, 1))
 # tridactylus
-thinned_tri_proj_thresh_mtp <- sdm_threshold(thinned_tri_proj_4_LQ2, thinned_tri_occs[,2:3], "mtp")
-plot(thinned_tri_proj_thresh_mtp)
-thinned_tri_proj_thresh_p10 <- sdm_threshold(thinned_tri_proj_4_LQ2, thinned_tri_occs[,2:3], "p10")
-plot(thinned_tri_proj_thresh_p10)
+thinned_tri_proj_mtp <- sdm_threshold(thinned_tri_proj, thinned_tri_occs[,2:3], "mtp")
+plot(thinned_tri_proj_mtp, zlim = c(0, 1))
+thinned_tri_proj_p10 <- sdm_threshold(thinned_tri_proj, thinned_tri_occs[,2:3], "p10")
+plot(thinned_tri_proj_p10, zlim = c(0, 1))
 # torquatus
-thinned_tor_proj_thresh_mtp <- sdm_threshold(thinned_tor_proj_4, thinned_tor_occs[,2:3], "mtp")
-plot(thinned_tor_proj_thresh_mtp)
-thinned_tor_proj_thresh_p10 <- sdm_threshold(thinned_tor_proj_4, thinned_tor_occs[,2:3], "p10")
-plot(thinned_tor_proj_thresh_p10)
+thinned_tor_proj_mtp <- sdm_threshold(thinned_tor_proj, thinned_tor_occs[,2:3], "mtp")
+plot(thinned_tor_proj_mtp, zlim = c(0, 1))
+thinned_tor_proj_p10 <- sdm_threshold(thinned_tor_proj, thinned_tor_occs[,2:3], "p10")
+plot(thinned_tor_proj_p10, zlim = c(0, 1))
 
 # thresholded models projected only to bounding box for each species
 # variegatus
-thinned_var_proj_bbox_thresh_mtp <- sdm_threshold(thinned_var_proj_bbox, thinned_var_occs[,2:3], "mtp")
-plot(thinned_var_proj_bbox_thresh_mtp)
-thinned_var_proj_bbox_thresh_p10 <- sdm_threshold(thinned_var_proj_bbox, thinned_var_occs[,2:3], "p10")
-plot(thinned_var_proj_bbox_thresh_p10)
+thinned_var_proj_bbox_mtp <- sdm_threshold(thinned_var_proj_bbox, thinned_var_occs[,2:3], "mtp")
+plot(thinned_var_proj_bbox_mtp, zlim = c(0, 1))
+thinned_var_proj_bbox_p10 <- sdm_threshold(thinned_var_proj_bbox, thinned_var_occs[,2:3], "p10")
+plot(thinned_var_proj_bbox_p10, zlim = c(0, 1))
 # tridactylus
-thinned_tri_proj_bbox_thresh_mtp <- sdm_threshold(thinned_tri_proj_bbox, thinned_tri_occs[,2:3], "mtp")
-plot(thinned_tri_proj_bbox_thresh_mtp)
-thinned_tri_proj_bbox_thresh_p10 <- sdm_threshold(thinned_tri_proj_bbox, thinned_tri_occs[,2:3], "p10")
-plot(thinned_tri_proj_bbox_thresh_p10)
+thinned_tri_proj_bbox_mtp <- sdm_threshold(thinned_tri_proj_bbox, thinned_tri_occs[,2:3], "mtp")
+plot(thinned_tri_proj_bbox_mtp, zlim = c(0, 1))
+thinned_tri_proj_bbox_p10 <- sdm_threshold(thinned_tri_proj_bbox, thinned_tri_occs[,2:3], "p10")
+plot(thinned_tri_proj_bbox_p10, zlim = c(0, 1))
 # torquatus
-thinned_tor_proj_bbox_thresh_mtp <- sdm_threshold(thinned_tor_proj_bbox, thinned_tor_occs[,2:3], "mtp")
-plot(thinned_tor_proj_bbox_thresh_mtp)
-thinned_tor_proj_bbox_thresh_p10 <- sdm_threshold(thinned_tor_proj_bbox, thinned_tor_occs[,2:3], "p10")
-plot(thinned_tor_proj_bbox_thresh_p10)
+thinned_tor_proj_bbox_mtp <- sdm_threshold(thinned_tor_proj_bbox, thinned_tor_occs[,2:3], "mtp")
+plot(thinned_tor_proj_bbox_mtp, zlim = c(0, 1))
+thinned_tor_proj_bbox_p10 <- sdm_threshold(thinned_tor_proj_bbox, thinned_tor_occs[,2:3], "p10")
+plot(thinned_tor_proj_bbox_p10, zlim = c(0, 1))
 
