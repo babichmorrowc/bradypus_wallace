@@ -184,3 +184,78 @@ tor_weighted_svmHYB[tor_weighted_svmHYB == 0] <- NA
 plot(tor_weighted_svmHYB)
 tor_weighted_svmHYB_mask <- mask(thinned_tor_proj, tor_weighted_svmHYB)
 plot(tor_weighted_svmHYB_mask)
+
+
+# Misclassification rates -------------------------------------------------
+
+
+# Spatial unweighted ------------------------------------------------------
+
+# Omission rate
+length(which(extract(sloth_unweighted_svmSP, var_occs[,2:3]) != 1))/nrow(var_occs[,2:3])
+length(which(extract(sloth_unweighted_svmSP, tri_occs[,2:3]) != 2))/nrow(tri_occs[,2:3])
+length(which(extract(sloth_unweighted_svmSP, tor_occs[,2:3]) != 3))/nrow(tor_occs[,2:3])
+
+# False inclusion
+# number of tridactylus & torquatus points classified as variegatus
+length(which(extract(sloth_unweighted_svmSP, tri_occs[,2:3]) == 1))
+length(which(extract(sloth_unweighted_svmSP, tor_occs[,2:3]) == 1))
+# number of variegatus points classified as tridactylus
+length(which(extract(sloth_unweighted_svmSP, var_occs[,2:3]) == 2))
+# number of variegatus points classified as torquatus
+length(which(extract(sloth_unweighted_svmSP, var_occs[,2:3]) == 3))
+
+# Spatial weighted --------------------------------------------------------
+
+# Omission rate
+length(which(extract(sloth_weighted_svmSP, var_occs[,2:3]) != 1))/nrow(var_occs[,2:3])
+length(which(extract(sloth_weighted_svmSP, tri_occs[,2:3]) != 2))/nrow(tri_occs[,2:3])
+length(which(extract(sloth_weighted_svmSP, tor_occs[,2:3]) != 3))/nrow(tor_occs[,2:3])
+
+# False inclusion
+# number of tridactylus & torquatus points classified as variegatus
+length(which(extract(sloth_weighted_svmSP, tri_occs[,2:3]) == 1))
+length(which(extract(sloth_weighted_svmSP, tor_occs[,2:3]) == 1))
+# number of variegatus points classified as tridactylus
+length(which(extract(sloth_weighted_svmSP, var_occs[,2:3]) == 2))
+# number of variegatus points classified as torquatus
+length(which(extract(sloth_weighted_svmSP, var_occs[,2:3]) == 3))
+
+# Hybrid unweighted -------------------------------------------------------
+
+# Omission rate
+# percentage of variegatus points outside variegatus range
+length(which(extract(sloth_unweighted_svmHYB, var_occs[,2:3]) != 1))/nrow(var_occs[,2:3])
+# percentage of tridactylus points outside tridactylus range
+length(which(extract(sloth_unweighted_svmHYB, tri_occs[,2:3]) != 2))/nrow(tri_occs[,2:3])
+# percentage of torquatus points outside torquatus range
+length(which(extract(sloth_unweighted_svmHYB, tor_occs[,2:3]) != 3))/nrow(tor_occs[,2:3])
+
+# False inclusion
+# number of tridactylus & torquatus points classified as variegatus
+length(which(extract(sloth_unweighted_svmHYB, tri_occs[,2:3]) == 1))
+length(which(extract(sloth_unweighted_svmHYB, tor_occs[,2:3]) == 1))
+# number of variegatus points classified as tridactylus
+length(which(extract(sloth_unweighted_svmHYB, var_occs[,2:3]) == 2))
+# number of variegatus points classified as torquatus
+length(which(extract(sloth_unweighted_svmHYB, var_occs[,2:3]) == 3))
+
+
+# Hybrid weighted -------------------------------------------------------
+
+# Omission rate
+# percentage of variegatus points outside variegatus range
+length(which(extract(sloth_weighted_svmHYB, var_occs[,2:3]) != 1))/nrow(var_occs[,2:3])
+# percentage of tridactylus points outside tridactylus range
+length(which(extract(sloth_weighted_svmHYB, tri_occs[,2:3]) != 2))/nrow(tri_occs[,2:3])
+# percentage of torquatus points outside torquatus range
+length(which(extract(sloth_weighted_svmHYB, tor_occs[,2:3]) != 3))/nrow(tor_occs[,2:3])
+
+# False inclusion
+# number of tridactylus & torquatus points classified as variegatus
+length(which(extract(sloth_weighted_svmHYB, tri_occs[,2:3]) == 1))
+length(which(extract(sloth_weighted_svmHYB, tor_occs[,2:3]) == 1))
+# number of variegatus points classified as tridactylus
+length(which(extract(sloth_weighted_svmHYB, var_occs[,2:3]) == 2))
+# number of variegatus points classified as torquatus
+length(which(extract(sloth_weighted_svmHYB, var_occs[,2:3]) == 3))
