@@ -298,6 +298,7 @@ writeRaster(thinned_tor_proj_bbox, "thinned_torquatus_bbox.tif")
 # Response curves ---------------------------------------------------------
 
 thinned_var_mod$betas
+response.plot(thinned_var_mod, v = "wc2.0_bio_30s_06", type = "cloglog")
 plot(thinned_var_mod, vars = paste0('wc2.0_bio_30s_', c("02", "04", "06", "07", "10", "11", "12", "13", "16", "17", "18", "19")))
 
 thinned_tri_mod$betas
@@ -308,7 +309,7 @@ plot(thinned_tor_mod, vars = c('wc2.0_bio_30s_14'))
 
 # Threshold models --------------------------------------------------------
 
-source("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Wallace_code/sdm_threshold.R")
+source("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Wallace_code/scripts/sdm_threshold.R")
 
 # thresholded models at MTP and 10th percentile
 # variegatus
@@ -343,4 +344,24 @@ thinned_tor_proj_bbox_mtp <- sdm_threshold(thinned_tor_proj_bbox, thinned_tor_oc
 plot(thinned_tor_proj_bbox_mtp, zlim = c(0, 1))
 thinned_tor_proj_bbox_p10 <- sdm_threshold(thinned_tor_proj_bbox, thinned_tor_occs[,2:3], "p10")
 plot(thinned_tor_proj_bbox_p10, zlim = c(0, 1))
+
+
+# Misclassification rates -------------------------------------------------
+
+# Omission rate
+# percentage of variegatus points outside variegatus range
+length(which(is.na(extract(thinned_var_proj_mtp, var_occs[,2:3]))))/nrow(var_occs[,2:3])
+# percentage of tridactylus points outside tridactylus range
+length(which(is.na(extract(thinned_tri_proj_bbox_mtp, tri_occs[,2:3]))))/nrow(tri_occs[,2:3])
+# percentage of torquatus points outside torquatus range
+length(which(is.na(extract(thinned_tor_proj_bbox_mtp, tor_occs[,2:3]))))/nrow(tor_occs[,2:3])
+
+# False inclusion
+# number of tridactylus & torquatus points classified as variegatus
+length(which(!is.na(extract(thinned_var_proj_mtp, tri_occs[,2:3]))))
+length(which(!is.na(extract(thinned_var_proj_mtp, tor_occs[,2:3]))))
+# number of variegatus points classified as tridactylus
+length(which(!is.na(extract(thinned_tri_proj_bbox_mtp, var_occs[,2:3]))))
+# number of variegatus points classified as torquatus
+length(which(!is.na(extract(thinned_tor_proj_bbox_mtp, var_occs[,2:3]))))
 
