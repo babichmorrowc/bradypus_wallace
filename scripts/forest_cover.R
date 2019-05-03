@@ -1,5 +1,6 @@
 library(raster)
-
+library(rgdal)
+library(gdalUtils)
 
 # Hansen Forest Loss ------------------------------------------------------
 
@@ -102,3 +103,7 @@ test_gimms <- raster("/Users/hellenfellows/Desktop/gimms_ndvi_qd_1981-2002/gimms
 test_gimms_crop <- crop(test_gimms, extent(c(-95, -25, -25, 20)))
 test_gimms_crop[test_gimms_crop == -88] <- NA
 plot(test_gimms_crop)
+
+# Earth Engine NDVI -------------------------------------------------------
+
+test_ndvi1 <- get_subdatasets("/Users/hellenfellows/Desktop/NDVI_data/42642/2204399966/MOD13A1_A2015321_h14v10_006_2015343135012_HEGOUT.hdf")

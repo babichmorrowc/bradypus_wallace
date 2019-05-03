@@ -78,7 +78,7 @@ gg1 +
   geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude, color=management_unit))
 #variegatus data by population region (Silva et al. 2018)
 gg1 +
-  geom_point(data = Bradypus_variegatus_litdata, aes(x=longitude, y=latitude, color=population_region))
+  geom_point(data = variegatus, aes(x=longitude, y=latitude, color=population_region))
 
 
 
@@ -89,12 +89,14 @@ register_google(key = api_key)
 
 #Satellite map
 bbox <- make_bbox(lon = variegatus$longitude, lat = variegatus$latitude, f = 0.2)
-map <- get_map(location = bbox, source = "google", maptype = "satellite")
+map <- get_map(location = bbox, source = "google", maptype = "terrain-background")
 ggmap(map)
 ggmap(map) +
   geom_point(data = variegatus, aes(x=longitude, y=latitude), color = "darkorange2") +
   geom_point(data = tridactylus, aes(x = longitude, y = latitude), color = "firebrick3") +
   geom_point(data = torquatus, aes(x = longitude, y = latitude), color = "deepskyblue")
+ggmap(map) +
+  geom_point(data = variegatus, aes(x=longitude, y=latitude, color=population_region))
 
 #Zoomed in map
 bbox2 <- make_bbox(lon = c(-65, -45), lat = c(-5,0), f = 0.1)

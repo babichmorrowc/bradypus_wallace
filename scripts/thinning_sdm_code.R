@@ -102,8 +102,8 @@ ggmap(map) +
 
 # Obtain environmental data -----------------------------------------------
 
-# grids <- list.files("/Users/hellenfellows/Desktop/bio_2-5m_bil", pattern = "*.bil$")
-# envs <- stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids))
+grids_2.5 <- list.files("/Users/hellenfellows/Desktop/bio_2-5m_bil", pattern = "*.bil$")
+envs_2.5 <- stack(paste0("/Users/hellenfellows/Desktop/bio_2-5m_bil/", grids_2.5))
 grids <- list.files("/Users/hellenfellows/Desktop/wc2.0_30s_bio")
 envs <- stack(paste0("/Users/hellenfellows/Desktop/wc2.0_30s_bio/", grids))
 
@@ -112,6 +112,7 @@ combine.lat <- c(var_occs$latitude, tri_occs$latitude, tor_occs$latitude)
 combine.lon <- c(var_occs$longitude, tri_occs$longitude, tor_occs$longitude)
 ext_sloths <- extent(c(min(combine.lon)-2, max(combine.lon)+2, min(combine.lat)-2, max(combine.lat)+2))
 Env_sloths <- crop(envs, ext_sloths)
+Env_sloths_2.5 <- crop(envs_2.5, ext_sloths)
 Env_var <- crop(envs, ext_var)
 Env_tri <- crop(envs, ext_tri)
 Env_tor <- crop(envs, ext_tor)
@@ -198,6 +199,10 @@ thinned_var_e <- ENMeval::ENMevaluate(thinned_var_occs.xy, var_envsBgMsk, bg.coo
 thinned_var_evalTbl <- thinned_var_e@results
 View(thinned_var_evalTbl)
 write_csv(thinned_var_evalTbl, "./maxentoutputs/thinned_var_evalTbl.csv")
+# get all models with avg.test.or10pct != 0
+sel_var_evalTbl <- thinned_var_evalTbl[thinned_var_evalTbl$avg.test.or10pct != 0, ]
+sel_var_evalTbl <- sel_var_evalTbl[with(sel_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC, delta.AICc)), ]
+View(sel_var_evalTbl)
 # get all models with delta AICc <= 2
 aic_var_evalTbl <- thinned_var_evalTbl[thinned_var_evalTbl$delta.AICc <= 2.0, ]
 aic_var_evalTbl <- aic_var_evalTbl[with(aic_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -208,17 +213,26 @@ names(thinned_var_evalMods) <- thinned_var_e@results$settings
 thinned_var_evalPreds <- thinned_var_e@predictions
 # Select your model from the models list
 thinned_var_mod <- thinned_var_evalMods[["LQH_2.5"]]
+thinned_var_mod_new <- thinned_var_evalMods[["L_4.5"]]
 # generate cloglog prediction
 thinned_var_pred <- ENMeval::maxnet.predictRaster(thinned_var_mod, var_envsBgMsk, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
 plot(thinned_var_pred)
 #project to entire extent
 thinned_var_proj <- ENMeval::maxnet.predictRaster(thinned_var_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
+thinned_var_proj_new <- ENMeval::maxnet.predictRaster(thinned_var_mod_new, Env_sloths, type = 'cloglog', clamp = TRUE)
+plot(thinned_var_proj_new)
 #project to variegatus extent
 thinned_var_proj_bbox <- ENMeval::maxnet.predictRaster(thinned_var_mod, Env_var, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
 plot(thinned_var_proj)
 plot(thinned_var_proj_bbox)
+
+# going back to look at the 2.5 resolution with new eval criteria
+# get all models with avg.test.or10pct != 0
+sel_var_evalTbl_2.5 <- thinned_var_evalTbl_4[thinned_var_evalTbl_4$avg.test.or10pct != 0, ]
+sel_var_evalTbl_2.5 <- sel_var_evalTbl_2.5[with(sel_var_evalTbl_2.5, order(avg.test.or10pct, -avg.test.AUC, delta.AICc)), ]
+View(sel_var_evalTbl_2.5)
 
 
 #save cloglog prediction
@@ -234,6 +248,10 @@ thinned_tri_e <- ENMeval::ENMevaluate(thinned_tri_occs.xy, tri_envsBgMsk, bg.coo
 thinned_tri_evalTbl <- thinned_tri_e@results
 View(thinned_tri_evalTbl)
 write_csv(thinned_tri_evalTbl, "./maxentoutputs/thinned_tri_evalTbl.csv")
+# get all models with avg.test.or10pct != 0
+sel_tri_evalTbl <- thinned_tri_evalTbl[thinned_tri_evalTbl$avg.test.or10pct != 0, ]
+sel_tri_evalTbl <- sel_tri_evalTbl[with(sel_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC, delta.AICc)), ]
+View(sel_tri_evalTbl)
 # get all models with delta AICc <= 2
 aic_tri_evalTbl <- thinned_tri_evalTbl[thinned_tri_evalTbl$delta.AICc <= 2.0, ]
 aic_tri_evalTbl <- aic_tri_evalTbl[with(aic_tri_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -243,23 +261,36 @@ thinned_tri_evalMods <- thinned_tri_e@models
 names(thinned_tri_evalMods) <- thinned_tri_e@results$settings
 thinned_tri_evalPreds <- thinned_tri_e@predictions
 # Select your model from the models list
-thinned_tri_mod <- thinned_tri_evalMods[["H_4"]]
+thinned_tri_mod <- thinned_tri_evalMods[["LQH_3.5"]]
+thinned_tri_mod_new <- thinned_tri_evalMods[["LQH_4"]]
 # generate cloglog prediction
 thinned_tri_pred <- ENMeval::maxnet.predictRaster(thinned_tri_mod, tri_envsBgMsk, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
 plot(thinned_tri_pred)
 #project to entire extent
 thinned_tri_proj <- ENMeval::maxnet.predictRaster(thinned_tri_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
+thinned_tri_proj_new <- ENMeval::maxnet.predictRaster(thinned_tri_mod_new, Env_sloths, type = 'cloglog', clamp = TRUE)
+plot(thinned_tri_proj_new)
 #project to tridactylus extent
 thinned_tri_proj_bbox <- ENMeval::maxnet.predictRaster(thinned_tri_mod, Env_tri, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
-plot(thinned_tri_proj)
-plot(thinned_tri_proj_bbox)
+plot(thinned_tri_proj, zlim = c(0,1))
+plot(thinned_tri_proj_bbox, zlim = c(0,1))
 
 #save cloglog prediction
 writeRaster(thinned_tri_proj, "thinned_tridactylus_H_4_cloglog.tif")
 writeRaster(thinned_tri_proj_bbox, "thinned_tridactylus_bbox.tif")
 
+# going back to look at the 2.5 resolution with new eval criteria
+# get all models with avg.test.or10pct != 0
+sel_tri_evalTbl_2.5 <- thinned_tri_evalTbl_4[thinned_tri_evalTbl_4$avg.test.or10pct != 0, ]
+sel_tri_evalTbl_2.5 <- sel_tri_evalTbl_2.5[with(sel_tri_evalTbl_2.5, order(avg.test.or10pct, -avg.test.AUC, delta.AICc)), ]
+View(sel_tri_evalTbl_2.5)
+# Select your model from the models list
+thinned_tri_mod_4_LQH4 <- thinned_tri_evalMods_4[["LQH_4"]]
+#project to entire extent
+thinned_tri_proj_4_LQH4 <- ENMeval::maxnet.predictRaster(thinned_tri_mod_4_LQH4, Env_sloths_2.5, type = 'cloglog', clamp = TRUE)
+plot(thinned_tri_proj_4_LQH4, zlim = c(0,1))
 
 # Bradypus torquatus
 # iterate model building over all chosen parameter settings
@@ -269,6 +300,10 @@ thinned_tor_e <- ENMeval::ENMevaluate(thinned_tor_occs.xy, tor_envsBgMsk, bg.coo
 thinned_tor_evalTbl <- thinned_tor_e@results
 View(thinned_tor_evalTbl)
 write_csv(thinned_tor_evalTbl, "./maxentoutputs/thinned_tor_evalTbl.csv")
+# get all models with avg.test.or10pct != 0
+sel_tor_evalTbl <- thinned_tor_evalTbl[thinned_tor_evalTbl$avg.test.or10pct != 0, ]
+sel_tor_evalTbl <- sel_tor_evalTbl[with(sel_tor_evalTbl, order(avg.test.or10pct, -avg.test.AUC, delta.AICc)), ]
+View(sel_tor_evalTbl)
 # get all models with delta AICc <= 2
 aic_tor_evalTbl <- thinned_tor_evalTbl[thinned_tor_evalTbl$delta.AICc <= 2.0, ]
 aic_tor_evalTbl <- aic_tor_evalTbl[with(aic_tor_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
@@ -290,6 +325,12 @@ thinned_tor_proj_bbox <- ENMeval::maxnet.predictRaster(thinned_tor_mod, Env_tor,
 #plot the model prediction
 plot(thinned_tor_proj)
 plot(thinned_tor_proj_bbox)
+
+# going back to look at the 2.5 resolution with new eval criteria
+# get all models with avg.test.or10pct != 0
+sel_tor_evalTbl_2.5 <- thinned_tor_evalTbl_4[thinned_tor_evalTbl_4$avg.test.or10pct != 0, ]
+sel_tor_evalTbl_2.5 <- sel_tor_evalTbl_2.5[with(sel_tor_evalTbl_2.5, order(avg.test.or10pct, -avg.test.AUC, delta.AICc)), ]
+View(sel_tor_evalTbl_2.5)
 
 #save cloglog prediction
 writeRaster(thinned_tor_proj, "thinned_torquatus_H_4.5_cloglog.tif")
