@@ -103,3 +103,59 @@ ggmap(map) +
   geom_point(data = torquatus_occs, aes(x=LONGITUDE, y=LATITUDE), color = "deepskyblue", cex = 0.75)
   
 
+# Add population regions to variegatus ------------------------------------
+
+# Atlantic Forest
+variegatus_occs$POPULATION_REGION <- ifelse(variegatus_occs$G200_REGIO == "Atlantic Forests", "AF", variegatus_occs$POPULATION_REGION)
+
+ggmap(map) +
+  geom_point(data = variegatus_occs, aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[grepl("Rio Negro", variegatus_occs$G200_REGIO), ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+     geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Southwestern Amazonian Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Cerrado Woodlands and Savannas", ], aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Amazon-Orinoco-Southern Caribbean mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Atlantic Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Atlantic Dry Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Northern Andean Montane Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Choc??-Dari??n Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Guianan Highlands Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Mesoamerican Pine-Oak Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Central Andean Yungas", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Chiquitano Dry Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Napo Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Chocó-Darién Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "South American Pacific mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Coastal Venezuela Montane Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+
