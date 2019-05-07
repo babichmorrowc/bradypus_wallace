@@ -18,25 +18,15 @@ variegatus_litdata_merge <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/
 tridactylus_litdata_merge <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/tridactylus_litdata_merge.csv")
 torquatus_litdata_merge <- read.csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/torquatus_litdata_merge.csv")
 
-# Get G200_REGIO for the original literature data
-
-# Make original literature data into SpatialPoints
-variegatus_merge_sp <- SpatialPoints(variegatus_litdata_merge[ ,2:3])
-tridactylus_merge_sp <- SpatialPoints(tridactylus_litdata_merge[ ,2:3])
-torquatus_merge_sp <- SpatialPoints(torquatus_litdata_merge[ ,2:3])
-
-# Set proj4string to match CRS of ecoregions
-proj4string(variegatus_merge_sp) <- proj4string(ecoregions)
-proj4string(tridactylus_merge_sp) <- proj4string(ecoregions)
-proj4string(torquatus_merge_sp) <- proj4string(ecoregions)
-
 # add a column to the datasets for the G200_REGIO
-variegatus_litdata_merge$G200_REGIO <- over(variegatus_merge_sp, ecoregions)$G200_REGIO
-View(variegatus_litdata_merge)
-tridactylus_litdata_merge$G200_REGIO <- over(tridactylus_merge_sp, ecoregions)$G200_REGIO
-View(tridactylus_litdata_merge)
-torquatus_litdata_merge$G200_REGIO <- over(torquatus_merge_sp, ecoregions)$G200_REGIO
-View(torquatus_litdata_merge)
+variegatus_litdata_merge$G200_REGIO <- NA
+tridactylus_litdata_merge$G200_REGIO <- NA
+torquatus_litdata_merge$G200_REGIO <- NA
+
+# add a column to the datasets for ECO_NAME
+variegatus_litdata_merge$ECO_NAME <- NA
+tridactylus_litdata_merge$ECO_NAME <- NA
+torquatus_litdata_merge$ECO_NAME <- NA
 
 
 # Format new data ---------------------------------------------------------
@@ -44,15 +34,21 @@ View(torquatus_litdata_merge)
 
 # load in new data
 NEOTROPICAL_XENARTHRANS_QUALITATIVE <- read.csv("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Occurrence_Data/Xenarthra_data/NEOTROPICAL_XENARTHRANS_QUALITATIVE.csv")
-View(NEOTROPICAL_XENARTHRANS_QUALITATIVE)
 
 # extract only Bradypus
 sloth_occurrences <- NEOTROPICAL_XENARTHRANS_QUALITATIVE[NEOTROPICAL_XENARTHRANS_QUALITATIVE$GENUS == "Bradypus", ]
 View(sloth_occurrences)
 # remove unidentified occurrences
 sloth_occurrences <- sloth_occurrences[sloth_occurrences$SPECIES != "Bradypus sp.", ]
+# remove potentially introduced sloths
+sloth_occurrences <- sloth_occurrences[sloth_occurrences$SP_ORIGIN != "POTENTIALLY INTRODUCED" | is.na(sloth_occurrences$SP_ORIGIN), ]
 # remove Bradypus pygmaeus
 sloth_occurrences <- sloth_occurrences[sloth_occurrences$SPECIES != "Bradypus pygmaeus", ]
+
+# format PRECISION column
+sloth_occurrences$PRECISION <- as.character(sloth_occurrences$PRECISION)
+sloth_occurrences$PRECISION <- as.numeric(sloth_occurrences$PRECISION)
+
 
 # Split up into different datasets
 variegatus_santos <- sloth_occurrences[sloth_occurrences$SPECIES == "Bradypus variegatus", ]
@@ -60,9 +56,9 @@ tridactylus_santos <- sloth_occurrences[sloth_occurrences$SPECIES == "Bradypus t
 torquatus_santos <- sloth_occurrences[sloth_occurrences$SPECIES == "Bradypus torquatus", ]
 
 # Select out species, coordinates, reference, and year/month info
-variegatus_santos_merge <- variegatus_santos[,c("SPECIES", "LONG_X", "LAT_Y", "REFERENCE", "COL_STRT_YR", "COL_STRT_MO", "COL_END_YR", "COL_END_MO")]
-tridactylus_santos_merge <- tridactylus_santos[,c("SPECIES", "LONG_X", "LAT_Y", "REFERENCE", "COL_STRT_YR", "COL_STRT_MO", "COL_END_YR", "COL_END_MO")]
-torquatus_santos_merge <- torquatus_santos[,c("SPECIES", "LONG_X", "LAT_Y", "REFERENCE", "COL_STRT_YR", "COL_STRT_MO", "COL_END_YR", "COL_END_MO")]
+variegatus_santos_merge <- variegatus_santos[,c("SPECIES", "LONG_X", "LAT_Y", "PRECISION", "REFERENCE", "COL_STRT_YR", "COL_STRT_MO", "COL_END_YR", "COL_END_MO")]
+tridactylus_santos_merge <- tridactylus_santos[,c("SPECIES", "LONG_X", "LAT_Y", "PRECISION", "REFERENCE", "COL_STRT_YR", "COL_STRT_MO", "COL_END_YR", "COL_END_MO")]
+torquatus_santos_merge <- torquatus_santos[,c("SPECIES", "LONG_X", "LAT_Y", "PRECISION", "REFERENCE", "COL_STRT_YR", "COL_STRT_MO", "COL_END_YR", "COL_END_MO")]
 
 # Fix SPECIES column to match my original data
 variegatus_santos_merge$SPECIES <- "bradypus_variegatus"
@@ -80,9 +76,14 @@ tridactylus_santos_merge$POPULATION_REGION <- NA
 torquatus_santos_merge$POPULATION_REGION <- NA
 
 # Add G200_REGIO column
-variegatus_santos_merge$G200_REGIO <- variegatus_santos$OlsonG200r
-tridactylus_santos_merge$G200_REGIO <- tridactylus_santos$OlsonG200r
-torquatus_santos_merge$G200_REGIO <- torquatus_santos$OlsonG200r
+variegatus_santos_merge$G200_REGIO <- NA
+tridactylus_santos_merge$G200_REGIO <-NA
+torquatus_santos_merge$G200_REGIO <- NA
+
+# Add ECO_NAME column
+variegatus_santos_merge$ECO_NAME <- NA
+tridactylus_santos_merge$ECO_NAME <-NA
+torquatus_santos_merge$ECO_NAME <- NA
 
 
 # Merge data --------------------------------------------------------------
@@ -103,7 +104,7 @@ torquatus_occs <- torquatus_occs[!duplicated(torquatus_occs[c('LONGITUDE', 'LATI
 
 # Go back over G200 regions -----------------------------------------------
 
-# Make original literature data into SpatialPoints
+# Make occurrence data into SpatialPoints
 variegatus_occs_sp <- SpatialPoints(variegatus_occs[ ,2:3])
 tridactylus_occs_sp <- SpatialPoints(tridactylus_occs[ ,2:3])
 torquatus_occs_sp <- SpatialPoints(torquatus_occs[ ,2:3])
@@ -114,13 +115,10 @@ proj4string(tridactylus_occs_sp) <- proj4string(ecoregions)
 proj4string(torquatus_occs_sp) <- proj4string(ecoregions)
 
 variegatus_occs$G200_REGIO <- over(variegatus_occs_sp, ecoregions)$G200_REGIO
-View(variegatus_occs)
 sum(is.na(variegatus_occs$G200_REGIO))
 tridactylus_occs$G200_REGIO <- over(tridactylus_occs_sp, ecoregions)$G200_REGIO
-View(tridactylus_occs)
 sum(is.na(tridactylus_occs$G200_REGIO))
 torquatus_occs$G200_REGIO <- over(torquatus_occs_sp, ecoregions)$G200_REGIO
-View(torquatus_occs)
 sum(is.na(torquatus_occs$G200_REGIO))
 
 variegatus_occs$ECO_NAME <- over(variegatus_occs_sp, ecoregions)$ECO_NAME
@@ -144,137 +142,133 @@ ggmap(map) +
 # Add population regions to variegatus ------------------------------------
 
 # Map all of the different population regions
-ggmap(map) +
-  geom_point(data = variegatus_occs, aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[grepl("Rio Negro", variegatus_occs$G200_REGIO), ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-     geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Southwestern Amazonian Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Cerrado Woodlands and Savannas", ], aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Amazon-Orinoco-Southern Caribbean mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Atlantic Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Atlantic Dry Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Northern Andean Montane Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Choc??-Dari??n Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Guianan Highlands Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Mesoamerican Pine-Oak Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Central Andean Yungas", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Chiquitano Dry Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Napo Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Chocó-Darién Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "South American Pacific mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Coastal Venezuela Montane Forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-# Map the ECO_NAME areas where G200_REGIO is NA
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Mato Grosso seasonal forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Maranhão Babaçu forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Southern Atlantic mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Uatuma-Trombetas moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Tocantins/Pindare moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Xingu-Tocantins-Araguaia moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Tapajós-Xingu moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Guianan savanna", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Caatinga", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Isthmian-Atlantic moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Isthmian-Pacific moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Costa Rican seasonal moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Beni savanna", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Bolivian montane dry forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Dry Chaco", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Apure-Villavicencio dry forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Catatumbo moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Guajira-Barranquilla xeric scrub", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Sinú Valley dry forests", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "La Costa xeric shrublands", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Mesoamerican Gulf-Caribbean mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
-
-ggmap(map) +
-  geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Central American Atlantic moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# ggmap(map) +
+#   geom_point(data = variegatus_occs, aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[grepl("Rio Negro", variegatus_occs$G200_REGIO), ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#      geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Southwestern Amazonian Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Cerrado Woodlands and Savannas", ], aes(x=LONGITUDE, y=LATITUDE, color = POPULATION_REGION))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Amazon-Orinoco-Southern Caribbean mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Atlantic Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Atlantic Dry Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Northern Andean Montane Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Choc??-Dari??n Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Guianan Highlands Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Mesoamerican Pine-Oak Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Central Andean Yungas", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Chiquitano Dry Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Napo Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Chocó-Darién Moist Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "South American Pacific mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$G200_REGIO == "Coastal Venezuela Montane Forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# # Map the ECO_NAME areas where G200_REGIO is NA
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Mato Grosso seasonal forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Maranhão Babaçu forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Southern Atlantic mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Uatuma-Trombetas moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Tocantins/Pindare moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Xingu-Tocantins-Araguaia moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Tapajós-Xingu moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Guianan savanna", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Caatinga", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Isthmian-Atlantic moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Isthmian-Pacific moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Costa Rican seasonal moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Beni savanna", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Bolivian montane dry forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Dry Chaco", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Apure-Villavicencio dry forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Catatumbo moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Guajira-Barranquilla xeric scrub", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Sinú Valley dry forests", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "La Costa xeric shrublands", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Mesoamerican Gulf-Caribbean mangroves", ], aes(x=LONGITUDE, y=LATITUDE))
+# 
+# ggmap(map) +
+#   geom_point(data = variegatus_occs[variegatus_occs$ECO_NAME == "Central American Atlantic moist forests", ], aes(x=LONGITUDE, y=LATITUDE))
 
 
 # Add population region identifier
-G200_AF_regions <- variegatus_occs$G200_REGIO == "Atlantic Forests"
-G200_AMZ_regions <- variegatus_occs$G200_REGIO %in% c("Central Andean Yungas", "Chiquitano Dry Forests", "Napo Moist Forests") | grepl("Rio Negro", variegatus_occs$G200_REGIO) | grepl("Amazon", variegatus_occs$G200_REGIO)
-G200_TA_regions <- variegatus_occs$G200_REGIO %in% c("Northern Andean Montane Forest", "Mesoamerican Pine-Oak Forests", "South American Pacific mangroves") | grepl("Choc", variegatus_occs$G200_REGIO)
+G200_AF_regions <- c("Atlantic Forests", "Atlantic Dry Forests")
+G200_AMZ_regions <- c("Central Andean Yungas", "Chiquitano Dry Forests", "Napo Moist Forests", "Rio Negro-Juruá Moist Forests", "Southwestern Amazonian Moist Forests", "Amazon River and Flooded Forests", "Amazon-Orinoco-Southern Caribbean mangroves", "Guianan Highlands Moist Forests")
+G200_TA_regions <- c("Northern Andean Montane Forests", "Mesoamerican Pine-Oak Forests", "South American Pacific mangroves", "Chocó-Darién Moist Forests")
 
-variegatus_occs$POPULATION_REGION <- ifelse(AF_regions, variegatus_occs$POPULATION_REGION <- "AF",
-       ifelse(AMZ_regions, variegatus_occs$POPULATION_REGION <- "AMZ",
-              ifelse(TA_regions, variegatus_occs$POPULATION_REGION <- "TA", NA)))
-
-ECO_AF_regions <- variegatus_occs$ECO_NAME == "Southern Atlantic mangroves"
-ECO_AMZ_regions <- variegatus_occs$ECO_NAME %in% c("Mato Grosso seasonal forests", "Maranhão Babaçu forests", "Uatuma-Trombetas moist forests", "Tocantins/Pindare moist forests", "Xingu-Tocantins-Araguaia moist forests", "Tapajós-Xingu moist forests", "Guianan savanna", "Beni savanna", "Bolivian montane dry forests", "Dry Chaco")
-ECO_TA_regions <- variegatus_occs$ECO_NAME %in% c("Isthmian-Atlantic moist forests", "Isthmian-Pacific moist forests", "Costa Rican seasonal moist forests", "Apure-Villavicencio dry forests", "Catatumbo moist forests", "Guajira-Barranquilla xeric scrub", "Sinú Valley dry forests", "Mesoamerican Gulf-Caribbean mangroves", "Central American Atlantic moist forests")
+ECO_AF_regions <- c("Southern Atlantic mangroves")
+ECO_AMZ_regions <- c("Mato Grosso seasonal forests", "Maranhão Babaçu forests", "Uatuma-Trombetas moist forests", "Tocantins/Pindare moist forests", "Xingu-Tocantins-Araguaia moist forests", "Tapajós-Xingu moist forests", "Guianan savanna", "Beni savanna", "Bolivian montane dry forests", "Dry Chaco")
+ECO_TA_regions <- c("Isthmian-Atlantic moist forests", "Isthmian-Pacific moist forests", "Costa Rican seasonal moist forests", "Apure-Villavicencio dry forests", "Catatumbo moist forests", "Guajira-Barranquilla xeric scrub", "Sinú Valley dry forests", "Mesoamerican Gulf-Caribbean mangroves", "Central American Atlantic moist forests")
 
 for(i in 1:nrow(variegatus_occs)){
   if(variegatus_occs$G200_REGIO[i] %in% G200_AF_regions | variegatus_occs$ECO_NAME[i] %in% ECO_AF_regions){
@@ -293,6 +287,16 @@ for(i in 1:nrow(variegatus_occs)){
 # Plot variegatus occurrences colored by POPULATION_REGION
 ggmap(map) +
   geom_point(data = variegatus_occs, aes(x = LONGITUDE, y = LATITUDE, color = POPULATION_REGION))
+
+ggmap(map) +
+  geom_point(data = variegatus_occs[is.na(variegatus_occs$POPULATION_REGION), ], aes(x = LONGITUDE, y = LATITUDE, color = ECO_NAME))
+
+
+View(variegatus_occs[is.na(variegatus_occs$POPULATION_REGION), ])
+
+# Designating POPULATION_REGION for points with NA values
+variegatus_occs$POPULATION_REGION <- ifelse(is.na(variegatus_occs$POPULATION_REGION) & variegatus_occs$LONGITUDE < -70, "TA", variegatus_occs$POPULATION_REGION)
+
 
 
 
