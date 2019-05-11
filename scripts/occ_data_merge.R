@@ -1,5 +1,6 @@
 library(rgdal)
-
+library(ggmap)
+library(readr)
 
 # Ecoregions --------------------------------------------------------------
 
@@ -33,8 +34,9 @@ torquatus_litdata_merge$ECO_NAME <- NA
 
 
 # load in new data
-NEOTROPICAL_XENARTHRANS_QUALITATIVE <- read.csv("/Users/hellenfellows/OneDrive\ -\ AMNH/Wallace/Occurrence_Data/Xenarthra_data/NEOTROPICAL_XENARTHRANS_QUALITATIVE.csv")
-
+NEOTROPICAL_XENARTHRANS_QUALITATIVE <- read_csv("~/OneDrive - AMNH/Wallace/Occurrence_Data/Xenarthra_data/NEOTROPICAL_XENARTHRANS_QUALITATIVE.csv", 
+                                                +     col_types = cols(COL_END_YR = col_number(), 
+                                                                       +         COL_STRT_YR = col_number()))
 # extract only Bradypus
 sloth_occurrences <- NEOTROPICAL_XENARTHRANS_QUALITATIVE[NEOTROPICAL_XENARTHRANS_QUALITATIVE$GENUS == "Bradypus", ]
 View(sloth_occurrences)
@@ -45,9 +47,20 @@ sloth_occurrences <- sloth_occurrences[sloth_occurrences$SP_ORIGIN != "POTENTIAL
 # remove Bradypus pygmaeus
 sloth_occurrences <- sloth_occurrences[sloth_occurrences$SPECIES != "Bradypus pygmaeus", ]
 
+# PRECISION filter --------------------------------------------------------
+
 # format PRECISION column
-sloth_occurrences$PRECISION <- as.character(sloth_occurrences$PRECISION)
-sloth_occurrences$PRECISION <- as.numeric(sloth_occurrences$PRECISION)
+# sloth_occurrences$PRECISION <- as.character(sloth_occurrences$PRECISION)
+# sloth_occurrences$PRECISION <- as.numeric(sloth_occurrences$PRECISION)
+
+summary(sloth_occurrences$PRECISION)
+sum(na.omit(sloth_occurrences$PRECISION) > 4500)
+
+# Filter out occurrences with PRECISION >4500 m
+sloth_occurrences <- sloth_occurrences[sloth_occurrences$PRECISION < 4500 | is.na(sloth_occurrences$PRECISION), ]
+
+
+# Split up new data into separate datasets --------------------------------
 
 
 # Split up into different datasets
@@ -297,6 +310,52 @@ View(variegatus_occs[is.na(variegatus_occs$POPULATION_REGION), ])
 # Designating POPULATION_REGION for points with NA values
 variegatus_occs$POPULATION_REGION <- ifelse(is.na(variegatus_occs$POPULATION_REGION) & variegatus_occs$LONGITUDE < -70, "TA", variegatus_occs$POPULATION_REGION)
 
+unique(variegatus_occs$G200_REGIO[variegatus_occs$POPULATION_REGION == "TA"])
+
+# torquatus POPULATION_REGION ---------------------------------------------
+
+tor_bbox <- make_bbox(lon = torquatus_occs$LONGITUDE, lat = torquatus_occs$LATITUDE, f = 0.5)
+tor_map <- get_map(tor_bbox, source = "google", maptype = "roadmap")
+ggmap(tor_map)
+
+ggmap(tor_map) +
+  geom_point(data = torquatus_occs, aes(x = LONGITUDE, y = LATITUDE)) +
+  geom_hline(yintercept = -19, color = "red")
+
+torquatus_occs$POPULATION_REGION <- ifelse(torquatus_occs$LATITUDE > -19, "AFN", "AFS")
+
+ggmap(tor_map) +
+  geom_point(data = torquatus_occs, aes(x = LONGITUDE, y = LATITUDE, color = POPULATION_REGION))
 
 
+
+
+# Year of data ------------------------------------------------------------
+
+# change suspicious 0 years to NAs
+variegatus_occs$COL_STRT_YR[variegatus_occs$COL_STRT_YR < 10] <- NA
+variegatus_occs$COL_END_YR[variegatus_occs$COL_END_YR < 10] <- NA
+
+tridactylus_occs$COL_STRT_YR[tridactylus_occs$COL_STRT_YR < 10] <- NA
+tridactylus_occs$COL_END_YR[tridactylus_occs$COL_END_YR < 10] <- NA
+
+torquatus_occs$COL_STRT_YR[torquatus_occs$COL_STRT_YR < 10] <- NA
+torquatus_occs$COL_END_YR[torquatus_occs$COL_END_YR < 10] <- NA
+
+sum(!is.na(variegatus_occs$COL_STRT_YR))
+summary(variegatus_occs$COL_STRT_YR)
+hist(variegatus_occs$COL_STRT_YR)
+
+
+sum(!is.na(tridactylus_occs$COL_STRT_YR))
+summary(tridactylus_occs$COL_STRT_YR)
+sum(!is.na(tridactylus_occs$COL_END_YR))
+summary(tridactylus_occs$COL_END_YR)
+hist(tridactylus_occs$COL_END_YR)
+
+sum(!is.na(torquatus_occs$COL_STRT_YR))
+summary(torquatus_occs$COL_STRT_YR)
+sum(!is.na(torquatus_occs$COL_END_YR))
+summary(torquatus_occs$COL_END_YR)
+hist(torquatus_occs$COL_END_YR)
 
