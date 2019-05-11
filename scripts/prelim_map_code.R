@@ -89,7 +89,7 @@ register_google(key = api_key)
 
 #Satellite map
 bbox <- make_bbox(lon = variegatus$longitude, lat = variegatus$latitude, f = 0.2)
-map <- get_map(location = bbox, source = "google", maptype = "terrain-background")
+map <- get_map(location = bbox, source = "google", maptype = "satellite")
 ggmap(map)
 ggmap(map) +
   geom_point(data = variegatus, aes(x=longitude, y=latitude), color = "darkorange2") +
