@@ -160,11 +160,11 @@ buffer_tor_bg.xy <- as.data.frame(buffer_tor_bg.xy)
 # variegatus: Partition using block method
 thinned_var_group.data <- ENMeval::get.block(occ = thinned_var_occs.xy, bg.coords = buffer_var_bg.xy)
 
-# tridactylus: Partition using jackknife
-thinned_tri_group.data <- ENMeval::get.block(occ = thinned_tri_occs.xy, bg.coords = buffer_tri_bg.xy)
+# tridactylus: Partition using checkerboard1
+thinned_tri_group.data <- ENMeval::get.checkerboard1(occ = thinned_tri_occs.xy, env = tri_envsBgMsk, bg.coords = buffer_tri_bg.xy, aggregation.factor = 2)
 
-# torquatus: Partition using jackknife
-thinned_tor_group.data <- ENMeval::get.block(occ = thinned_tor_occs.xy, bg.coords = buffer_tor_bg.xy)
+# torquatus: Partition using checkerboard1
+thinned_tor_group.data <- ENMeval::get.checkerboard1(occ = thinned_tor_occs.xy, env = tor_envsBgMsk, bg.coords = buffer_tor_bg.xy, aggregation.factor = 5)
 
 # pull out the occurrence and background partition group numbers from the list
 thinned_var_occs.grp <- thinned_var_group.data[[1]]
@@ -193,35 +193,23 @@ sel_var_evalTbl <- thinned_var_evalTbl[thinned_var_evalTbl$avg.test.or10pct != 0
 sel_var_evalTbl <- sel_var_evalTbl[with(sel_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC, delta.AICc)), ]
 View(sel_var_evalTbl)
 # get all models with delta AICc <= 2
-aic_var_evalTbl <- thinned_var_evalTbl[thinned_var_evalTbl$delta.AICc <= 2.0, ]
-aic_var_evalTbl <- aic_var_evalTbl[with(aic_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
-View(aic_var_evalTbl)
+# aic_var_evalTbl <- thinned_var_evalTbl[thinned_var_evalTbl$delta.AICc <= 2.0, ]
+# aic_var_evalTbl <- aic_var_evalTbl[with(aic_var_evalTbl, order(avg.test.or10pct, -avg.test.AUC)), ]
+# View(aic_var_evalTbl)
 #evaluation table for variegatus with spatial thinning and bias file:
 thinned_var_evalMods <- thinned_var_e@models
 names(thinned_var_evalMods) <- thinned_var_e@results$settings
 thinned_var_evalPreds <- thinned_var_e@predictions
 # Select your model from the models list
-thinned_var_mod <- thinned_var_evalMods[["LQH_2.5"]]
-thinned_var_mod_new <- thinned_var_evalMods[["L_4.5"]]
+thinned_var_mod <- thinned_var_evalMods[["H_1"]]
 # generate cloglog prediction
 thinned_var_pred <- ENMeval::maxnet.predictRaster(thinned_var_mod, var_envsBgMsk, type = 'cloglog', clamp = TRUE)
 # plot the model prediction
 plot(thinned_var_pred)
-#project to entire extent
-thinned_var_proj <- ENMeval::maxnet.predictRaster(thinned_var_mod, Env_sloths, type = 'cloglog', clamp = TRUE)
-thinned_var_proj_new <- ENMeval::maxnet.predictRaster(thinned_var_mod_new, Env_sloths, type = 'cloglog', clamp = TRUE)
-plot(thinned_var_proj_new)
 #project to variegatus extent
 thinned_var_proj_bbox <- ENMeval::maxnet.predictRaster(thinned_var_mod, Env_var, type = 'cloglog', clamp = TRUE)
 #plot the model prediction
-plot(thinned_var_proj)
 plot(thinned_var_proj_bbox)
-
-# going back to look at the 2.5 resolution with new eval criteria
-# get all models with avg.test.or10pct != 0
-sel_var_evalTbl_2.5 <- thinned_var_evalTbl_4[thinned_var_evalTbl_4$avg.test.or10pct != 0, ]
-sel_var_evalTbl_2.5 <- sel_var_evalTbl_2.5[with(sel_var_evalTbl_2.5, order(avg.test.or10pct, -avg.test.AUC, delta.AICc)), ]
-View(sel_var_evalTbl_2.5)
 
 
 #save cloglog prediction
