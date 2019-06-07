@@ -167,7 +167,13 @@ tri_checkerboard1.10_Preds <- tri_checkerboard1.10@predictions
 tri_checkerboard1.10_mod <- tri_checkerboard1.10_evalMods[["LH3.0"]]
 tri_checkerboard1.10_proj <- ENMeval::maxnet.predictRaster(tri_checkerboard1.10_mod, Env_tri, type = 'cloglog', doClamp = TRUE)
 #plot the model prediction
-plot(tri_checkerboard1.10_proj)
+png("tri_sdm.png", units = "in", width = 5, height = 4, res = 300)
+plot(tri_checkerboard1.10_proj, col = inferno(1000), zlim = c(0,1))
+points(tridactylus_occs[,2:3], pch = 21, cex = 0.5, col = "black", bg = "springgreen3")
+dev.off()
+# project to entire region
+tri_checkerboard1.10_proj2 <- ENMeval::maxnet.predictRaster(tri_checkerboard1.10_mod, Env_var, type = 'cloglog', doClamp = TRUE)
+plot(tri_checkerboard1.10_proj2)
 
 # Checkerboard 2 ----------------------------------------------------------
 
@@ -268,6 +274,9 @@ tor_checkerboard1.10_mod <- tor_checkerboard1.10_evalMods[["LQ5.0"]]
 tor_checkerboard1.10_proj <- ENMeval::maxnet.predictRaster(tor_checkerboard1.10_mod, Env_tor, type = 'cloglog', doClamp = TRUE)
 #plot the model prediction
 plot(tor_checkerboard1.10_proj)
+# project to entire region
+tor_checkerboard1.10_proj2 <- ENMeval::maxnet.predictRaster(tor_checkerboard1.10_mod, Env_var, type = 'cloglog', doClamp = TRUE)
+plot(tor_checkerboard1.10_proj2)
 
 # Checkerboard 2 ----------------------------------------------------------
 
