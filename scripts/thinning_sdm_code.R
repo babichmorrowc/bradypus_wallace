@@ -35,9 +35,9 @@ bbox <- make_bbox(lon = variegatus_occs$LONGITUDE, lat = variegatus_occs$LATITUD
 map <- get_map(location = bbox, source = "google", maptype = "satellite")
 ggmap(map)
 ggmap(map) +
-  geom_point(data = variegatus_occs, aes(x = LONGITUDE, y = LATITUDE), color = "darkorange1") +
-  geom_point(data = tridactylus_occs, aes(x = LONGITUDE, y = LATITUDE), color = "deepskyblue") +
-  geom_point(data = torquatus_occs, aes(x = LONGITUDE, y = LATITUDE), color = "mediumorchid2")
+  geom_point(data = variegatus_occs, aes(x = LONGITUDE, y = LATITUDE), color = "darkorange1", cex = 0.5) +
+  geom_point(data = tridactylus_occs, aes(x = LONGITUDE, y = LATITUDE), color = "springgreen3", cex = 0.5) +
+  geom_point(data = torquatus_occs, aes(x = LONGITUDE, y = LATITUDE), color = "deepskyblue", cex = 0.5)
 
 # Process occurrence data -------------------------------------------------
 
@@ -318,6 +318,9 @@ writeRaster(thinned_tor_proj_bbox, "thinned_torquatus_bbox.tif")
 thinned_var_mod$betas
 response.plot(thinned_var_mod, v = "wc2.0_bio_30s_06", type = "cloglog")
 plot(thinned_var_mod, vars = paste0('wc2.0_bio_30s_', c("02", "04", "06", "07", "10", "11", "12", "13", "16", "17", "18", "19")))
+
+var_checkerboard1.10_mod$betas
+plot.resp()
 
 thinned_tri_mod$betas
 plot(thinned_tri_mod, vars = c('wc2.0_bio_30s_06'))
