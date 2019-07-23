@@ -6,6 +6,8 @@ build_enm <- function(occs, env, bg, partition, aggregation.factor){
     group.data <- ENMeval::get.checkerboard1(occ = occs, env = env, bg = bg, aggregation.factor = aggregation.factor)
   } else if(partition == "checkerboard2"){
     group.data <- ENMeval::get.checkerboard2(occ = occs, env = env, bg = bg, aggregation.factor = aggregation.factor)
+  } else if(partition == "jackknife"){
+    group.data <- ENMeval::get.jackknife(occ = occs, bg = bg)
   }
   occs.grp <- group.data[[1]]
   bg.grp <- group.data[[2]]
